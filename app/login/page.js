@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Eye, EyeOff } from 'lucide-react';
+import logo from '../../public/opeco-logo.png';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -39,20 +41,17 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-[#fafafa] px-4">
 
       <div className="w-full max-w-sm">
 
         {/* Logo */}
         <div className="flex justify-center mb-6">
-          <div className="w-12 h-12 bg-red-700 rounded-full flex items-center justify-center text-white font-bold">
-            B
-          </div>
+           <Image src={logo} width={120} height={120} alt='logo-opeco'/>
         </div>
 
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-sm p-6">
-
           <div className="text-center mb-6">
             <h1 className="text-xl font-semibold text-gray-900">
               Seja Bem Vindo!

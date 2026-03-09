@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import BottomNav from '../components/ui/BottomNav';
+import AdminSidebar from '../components/ui/AdminSideBar';
 
 const VIEWS = {
   CLIENTE: 'cliente',
@@ -13,6 +15,8 @@ const VIEWS = {
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -33,12 +37,15 @@ export default function DashboardPage() {
   const roleLabel = role === 'admin' ? 'Administrador' : 'Cliente';
 
   return (
-    <div className="min-h-screen bg-[#fff5f7] flex flex-col">
+    <div className="min-h-screen bg-[#fafafa] flex flex-col">
       {/* Top bar */}
       <header className="px-4 pt-4 pb-3 flex items-center justify-between bg-white shadow-sm">
-        <button className="w-9 h-9 rounded-full flex items-center justify-center border border-gray-200 text-gray-700">
-          ☰
-        </button>
+        {/* Botão hamburger apenas admin */}
+        {view === VIEWS.ADMIN ? (
+          <AdminSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
+        ) : (
+          <div className="w-9" />
+        )}
 
         <div className="flex-1 mx-3">
           {view === VIEWS.CLIENTE ? (
@@ -75,8 +82,8 @@ export default function DashboardPage() {
         {view === VIEWS.CLIENTE ? <ClientDashboard /> : <AdminDashboard />}
       </main>
 
-      {/* Bottom navigation (fixo) */}
-      <BottomNav />
+      {/* Bottom navigation apenas cliente */}
+      {view === VIEWS.CLIENTE && <BottomNav />}
     </div>
   );
 }
@@ -219,7 +226,7 @@ function AdminDashboard() {
         </div>
 
         <div className="flex items-center justify-between mb-3 gap-1">
-          <button className="px-3 py-1 rounded-full text-[11px] font-semibold bg-red-500 text-white">
+          <button className="px-3 py-1 rounded-full text-[11px] font-semibold bg-[#8E000C] text-white">
             Hoje
           </button>
           <button className="px-3 py-1 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
@@ -271,28 +278,3 @@ function AdminDashboard() {
     </>
   );
 }
-
-function BottomNav() {
-  const items = [
-    { href: '/dashboard', label: 'Início', icon: '🏠' },
-    { href: '', label: 'Dash', icon: '📊' },
-    { href: '/produtos', label: 'Produtos', icon: '📦' },
-    { href: '/clientes', label: 'Clientes', icon: '👥' },
-  ];
-
-  return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-5 py-2.5 flex items-center justify-between shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
-      {items.map((item) => (
-        <Link
-          key={item.href}
-          href={item.href}
-          className="flex flex-col items-center justify-center text-[10px] text-gray-500"
-        >
-          <span className="text-lg mb-0.5">{item.icon}</span>
-          <span>{item.label}</span>
-        </Link>
-      ))}
-    </nav>
-  );
-}
-
