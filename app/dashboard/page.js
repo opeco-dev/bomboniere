@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -43,7 +44,7 @@ export default function DashboardPage() {
           {view === VIEWS.CLIENTE ? (
             <>
               <p className="text-xs text-gray-500 font-medium">Saldo Devedor</p>
-              <p className="text-xl font-semibold text-red-600 -mt-0.5">R$ -4,70</p>
+              <p className="text-xl font-semibold text-[#8E000C] -mt-0.5">R$ -4,70</p>
             </>
           ) : (
             <>
@@ -113,7 +114,7 @@ function ProductCard({ name, category, price }) {
       <p className="text-[11px] text-gray-500 mb-2">{category}</p>
 
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-red-600">R$ {price}</span>
+        <span className="text-xs font-semibold text-[#8E000C]">R$ {price}</span>
         <button className="w-7 h-7 rounded-full bg-red-500 text-white text-base flex items-center justify-center shadow">
           +
         </button>
@@ -164,20 +165,18 @@ function StatCard({ label, value, sublabel }) {
     <div className="bg-white rounded-2xl p-3 shadow-sm">
       <div className="w-10 h-10 rounded-xl bg-[#ffe1e6] mb-2" />
       <p className="text-[11px] text-gray-500 mb-1">{label}</p>
-      <p className="text-sm font-semibold text-red-600">{value}</p>
+      <p className="text-sm font-semibold text-[#8E000C]">{value}</p>
       {sublabel && <p className="text-[10px] text-gray-400 mt-1">{sublabel}</p>}
     </div>
   );
 }
 
-function MiniBarChart() {
-  const values = [14, 18, 11, 19, 16, 20, 13, 17, 15, 12, 18, 19];
+function MiniBarChart({ values }) {
 
   return (
     <div className="flex items-end gap-1 h-32">
       {values.map((v, idx) => (
         <div
-          // eslint-disable-next-line react/no-array-index-key
           key={idx}
           className="flex-1 rounded-full bg-[#ffd4dd]"
           style={{ height: `${v * 4}px` }}
@@ -188,23 +187,35 @@ function MiniBarChart() {
 }
 
 function AdminDashboard() {
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then(res => res.json())
+      .then(data => setStats(data))
+  }, [])
+
+  if (!stats) {
+    return <p className="text-sm text-gray-500">Carregando dados...</p>
+  }
   return (
     <>
       <SearchInput placeholder="Pesquisar produtos, clientes..." />
 
       {/* Cards de resumo */}
       <section className="grid grid-cols-2 gap-3 mb-4">
-        <StatCard label="Total em Vendas Hoje" value="R$ 1.234,00" />
-        <StatCard label="Total em Produtos" value="123" />
+        <StatCard label="Total em Vendas Hoje" value={`R$ ${stats.vendasHoje.toFixed(2)}`} />
+        <StatCard label="Total de Produtos" value={stats.totalProdutos} />
         <StatCard label="Lucro Líquido Hoje" value="R$ 1.234,00" />
-        <StatCard label="Itens em Estoque" value="1.234" />
+        <StatCard label="Itens em Estoque" value={stats.itensEstoque}
+      />
       </section>
 
       {/* Gráfico simples */}
       <section className="bg-white rounded-2xl p-3 shadow-sm mb-4">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold text-gray-800">Total em Vendas</h2>
-          <span className="text-xs text-red-600 font-semibold">R$ 1.234,00</span>
+          <span className="text-xs text-[#8E000C] font-semibold">R$ 1.234,00</span>
         </div>
 
         <div className="flex items-center justify-between mb-3 gap-1">
@@ -222,7 +233,7 @@ function AdminDashboard() {
           </button>
         </div>
 
-        <MiniBarChart />
+        <MiniBarChart values={[12,18,10,20,14,17,19]}/>
       </section>
 
       {/* Tabela de produtos vendidos */}
@@ -243,24 +254,16 @@ function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b last:border-0">
-                <td className="py-1.5 pr-2 text-gray-700">Chocolate Crunch</td>
-                <td className="py-1.5 pr-2 text-gray-500">Chocolate</td>
-                <td className="py-1.5 pr-2 text-gray-700">23</td>
-                <td className="py-1.5 text-right text-red-600 font-semibold">R$ 230,00</td>
-              </tr>
-              <tr className="border-b last:border-0">
-                <td className="py-1.5 pr-2 text-gray-700">Monster 473ml</td>
-                <td className="py-1.5 pr-2 text-gray-500">Bebida</td>
-                <td className="py-1.5 pr-2 text-gray-700">12</td>
-                <td className="py-1.5 text-right text-red-600 font-semibold">R$ 144,00</td>
-              </tr>
-              <tr>
-                <td className="py-1.5 pr-2 text-gray-700">Fini Bananas</td>
-                <td className="py-1.5 pr-2 text-gray-500">Doce</td>
-                <td className="py-1.5 pr-2 text-gray-700">30</td>
-                <td className="py-1.5 text-right text-red-600 font-semibold">R$ 150,00</td>
-              </tr>
+              {stats.produtosVendidos.map((p, i) => (
+                <tr key={i} className="border-b last:border-0">
+                  <td className="py-1.5 pr-2 text-gray-700">{p.nome}</td>
+                  <td className="py-1.5 pr-2 text-gray-500">{p.categoria}</td>
+                  <td className="py-1.5 pr-2 text-gray-700">{p.quantidade}</td>
+                  <td className="py-1.5 text-right text-[#8E000C] font-semibold">
+                    R$ {p.total.toFixed(2)}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

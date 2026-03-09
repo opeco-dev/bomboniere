@@ -90,7 +90,7 @@ export default function ProdutosPage() {
             <Link href="/dashboard" className="text-blue-600 hover:underline mb-2 block">
               ← Voltar
             </Link>
-            <h1 className="text-3xl font-bold text-gray-800">📦 Produtos</h1>
+            <h1 className="text-3xl font-bold text-gray-800">Produtos</h1>
           </div>
           <button
             onClick={() => setShowForm(!showForm)}
@@ -119,15 +119,20 @@ export default function ProdutosPage() {
 
               <div>
                 <label className="block text-sm font-bold mb-2">Categoria *</label>
-                <input
-                  type="text"
+                <select
                   name="categoria"
                   value={formData.categoria}
                   onChange={handleChange}
                   className="w-full border rounded px-3 py-2"
-                  placeholder="Ex: Chocolates, Balas, Doces"
                   required
-                />
+                >
+                  <option disabled >Selecione a Categoria</option>
+                  <option value="Doce">Doce</option>
+                  <option value="Bebida">Bebida</option>
+                  <option value="Salgado">Salgado</option>
+                  <option value="Sorvete">Sorvete</option>
+                  <option value="Chocolate">Chocolate</option>                  
+                </select>
               </div>
 
               <div className="col-span-2">
