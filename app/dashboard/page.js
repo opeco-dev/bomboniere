@@ -6,6 +6,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import BottomNav from '../components/ui/BottomNav';
 import AdminSidebar from '../components/ui/AdminSideBar';
+import ProductCard from '../components/ui/products/ProductCard';
+import ProductModal from '../components/ui/products/ProductModal';
 
 const VIEWS = {
   CLIENTE: 'cliente',
@@ -13,6 +15,21 @@ const VIEWS = {
 };
 
 export default function DashboardPage() {
+  const [produtos, setProdutos] = useState([])
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null)
+  const [modalOpen, setModalOpen] = useState(false)
+
+  useEffect(() => {
+    fetch("/api/produtos")
+      .then(res => res.json())
+      .then(data => setProdutos(data))
+  }, [])
+
+  function abrirProduto(produto) {
+    setProdutoSelecionado(produto)
+    setModalOpen(true)
+  }
+  
   const { data: session, status } = useSession();
   const router = useRouter();
   
@@ -79,7 +96,17 @@ export default function DashboardPage() {
 
       {/* Content */}
       <main className="flex-1 overflow-y-auto px-4 pb-24 pt-3">
-        {view === VIEWS.CLIENTE ? <ClientDashboard /> : <AdminDashboard />}
+        {view === VIEWS.CLIENTE ? (
+          <ClientDashboard
+            produtos={produtos}
+            abrirProduto={abrirProduto}
+            produtoSelecionado={produtoSelecionado}
+            modalOpen={modalOpen}
+            setModalOpen={setModalOpen}
+          />
+        ) : (
+          <AdminDashboard />
+        )}
       </main>
 
       {/* Bottom navigation apenas cliente */}
@@ -112,57 +139,26 @@ function SectionHeader({ title }) {
   );
 }
 
-function ProductCard({ name, category, price }) {
-  return (
-    <div className="w-40 shrink-0 bg-white rounded-2xl p-3 shadow-sm mr-3">
-      <div className="w-full h-20 rounded-xl bg-[#ffe1e6] mb-3" />
-
-      <p className="text-xs font-semibold text-gray-800 line-clamp-2 mb-1">{name}</p>
-      <p className="text-[11px] text-gray-500 mb-2">{category}</p>
-
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-[#8E000C]">R$ {price}</span>
-        <button className="w-7 h-7 rounded-full bg-red-500 text-white text-base flex items-center justify-center shadow">
-          +
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function ClientDashboard() {
+function ClientDashboard({produtos, abrirProduto, produtoSelecionado, modalOpen, setModalOpen}) {
   return (
     <>
       <SearchInput placeholder="Buscar produtos" />
 
-      {/* Seção Bebidas */}
-      <section className="mb-4">
-        <SectionHeader title="Bebidas" />
-        <div className="flex overflow-x-auto pb-1 -mx-1 px-1">
-          <ProductCard name="Monster 473ml" category="Refrigerante" price="10,00" />
-          <ProductCard name="Coca 150ml" category="Refrigerante" price="5,00" />
-          <ProductCard name="Suco de Laranja" category="Bebida" price="6,50" />
-        </div>
-      </section>
+      <div className="grid grid-cols-2 gap-3">
+        {produtos.map((produto) => (
+          <ProductCard
+            key={produto.id}
+            produto={produto}
+            onClick={abrirProduto}
+          />
+        ))}
+      </div>
 
-      {/* Seção Doces */}
-      <section className="mb-4">
-        <SectionHeader title="Doces" />
-        <div className="flex overflow-x-auto pb-1 -mx-1 px-1">
-          <ProductCard name="Fini Bananas" category="Balas" price="5,00" />
-          <ProductCard name="Chocolate Crunch" category="Chocolate" price="10,00" />
-          <ProductCard name="Trento 32g" category="Chocolate" price="4,50" />
-        </div>
-      </section>
-
-      {/* Seção Snacks */}
-      <section className="mb-4">
-        <SectionHeader title="Snacks" />
-        <div className="flex overflow-x-auto pb-1 -mx-1 px-1">
-          <ProductCard name="Ruffles 90g" category="Salgadinhos" price="8,00" />
-          <ProductCard name="Pipoca Doce" category="Snacks" price="4,00" />
-        </div>
-      </section>
+      <ProductModal
+        produto={produtoSelecionado}
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+      />
     </>
   );
 }
