@@ -2,12 +2,14 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import ProductImageUpload from "../components/ui/products/ProductImageUpload";
+import ProductEditModal from '../components/ui/products/ProductEditModal';
 
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState([]);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [selectedProduto, setSelectedProduto] = useState(null);
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
@@ -316,7 +318,7 @@ export default function ProdutosPage() {
                   const estoqueAbaixoMinimo = estoqueTotal < produto.estoqueMin;
 
                   return (
-                    <tr key={produto.id} className="border-t hover:bg-gray-50">
+                    <tr key={produto.id} onClick={() => setSelectedProduto(produto)} className="border-t hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="font-semibold">{produto.nome}</div>
                         <div className="text-sm text-gray-600">
@@ -347,6 +349,13 @@ export default function ProdutosPage() {
             </tbody>
           </table>
         </div>
+        {selectedProduto && (
+          <ProductEditModal
+            produto={selectedProduto}
+            onClose={() => setSelectedProduto(null)}
+            onUpdate={() => fetchProdutos()}
+          />
+        )}
       </div>
     </div>
   );
