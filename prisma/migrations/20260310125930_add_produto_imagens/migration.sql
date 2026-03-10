@@ -28,7 +28,7 @@ CREATE TABLE "Cliente" (
 
 -- CreateTable
 CREATE TABLE "Produto" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "nome" TEXT NOT NULL,
     "descricao" TEXT,
     "categoria" TEXT NOT NULL,
@@ -42,9 +42,17 @@ CREATE TABLE "Produto" (
 );
 
 -- CreateTable
+CREATE TABLE "ProdutoImagem" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "url" TEXT NOT NULL,
+    "produtoId" INTEGER NOT NULL,
+    CONSTRAINT "ProdutoImagem_produtoId_fkey" FOREIGN KEY ("produtoId") REFERENCES "Produto" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
 CREATE TABLE "Estoque" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "produtoId" TEXT NOT NULL,
+    "produtoId" INTEGER NOT NULL,
     "quantidade" INTEGER NOT NULL,
     "lote" TEXT,
     "dataValidade" DATETIME,
@@ -72,7 +80,7 @@ CREATE TABLE "Venda" (
 CREATE TABLE "ItemVenda" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "vendaId" TEXT NOT NULL,
-    "produtoId" TEXT NOT NULL,
+    "produtoId" INTEGER NOT NULL,
     "quantidade" INTEGER NOT NULL,
     "precoUnit" REAL NOT NULL,
     "subtotal" REAL NOT NULL,

@@ -44,7 +44,7 @@ model Cliente {
 }
 
 model Produto {
-  id          String   @id @default(cuid())
+  id          Int   @id @default(autoincrement())
   nome        String
   descricao   String?
   categoria   String
@@ -58,14 +58,23 @@ model Produto {
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  imagens     ProdutoImagem[]
 
   estoque     Estoque[]
   itensVenda  ItemVenda[]
 }
 
+model ProdutoImagem {
+  id        Int     @id @default(autoincrement())
+  url       String
+  produtoId Int
+  produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+}
+
 model Estoque {
   id            String   @id @default(cuid())
-  produtoId     String
+  produtoId     Int
 
   quantidade    Int
   lote          String?
@@ -102,7 +111,7 @@ model Venda {
 model ItemVenda {
   id          String   @id @default(cuid())
   vendaId     String
-  produtoId   String
+  produtoId   Int
 
   quantidade  Int
   precoUnit   Float
