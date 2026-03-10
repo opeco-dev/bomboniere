@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
+import { useCart } from '../../contexts/CartContext';
 
 export default function ProductModal({ produto, open, onClose }) {
   const [index, setIndex] = useState(0);
@@ -9,6 +10,8 @@ export default function ProductModal({ produto, open, onClose }) {
   if (!open || !produto) return null;
   
   const imagens = produto.imagens || []
+
+  const { addToCart } = useCart()
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -64,7 +67,7 @@ export default function ProductModal({ produto, open, onClose }) {
           <p className="text-sm text-gray-500 mt-1">{produto.descricao}</p>
         </div>
 
-        <button className="mt-6 w-full bg-[#8E000C] text-white py-2 rounded-full">
+        <button className="mt-6 w-full bg-[#8E000C] text-white py-2 rounded-full" onClick={() => addToCart(produto)}>
           Adicionar ao Carrinho
         </button>
       </div>
