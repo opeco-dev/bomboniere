@@ -67,7 +67,7 @@ export default function ProductModal({ produto, open, onClose }) {
           <p className="text-sm text-gray-500 mt-1">{produto.descricao}</p>
         </div>
 
-        <button className="mt-6 w-full bg-[#8E000C] text-white py-2 rounded-full" onClick={() => addToCart(produto)}>
+        <button className="mt-6 w-full bg-[#8E000C] text-white py-2 rounded-full" onClick={() => { addToCart(produto); onClose()}}>
           Adicionar ao Carrinho
         </button>
       </div>
