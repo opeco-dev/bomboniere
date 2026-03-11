@@ -70,6 +70,7 @@ CREATE TABLE "Venda" (
     "desconto" REAL NOT NULL DEFAULT 0,
     "status" TEXT NOT NULL DEFAULT 'aberta',
     "observacoes" TEXT,
+    "pagamentoId" TEXT,
     "dataVenda" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,

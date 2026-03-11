@@ -55,7 +55,7 @@ export default function CartItemCard({ item }) {
 
       </div>
 
-      <div className="text-red-600 font-bold">
+      <div className="text-[#8E000C] font-bold">
 
         R$ {(item.preco * item.quantidade).toFixed(2)}
 

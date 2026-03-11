@@ -96,7 +96,8 @@ model Venda {
 
   status      String   @default("aberta") // aberta, finalizada, cancelada
   observacoes String?
-
+  
+  pagamentoId String?
   dataVenda   DateTime @default(now())
 
   createdAt   DateTime @default(now())

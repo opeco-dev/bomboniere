@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import BottomNav from "../components/ui/BottomNav";
 import StatusPedido from "../components/ui/StatusPedido";
 
 export default function PedidosPage() {
   const [pedidos, setPedidos] = useState([]);
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/pedidos")
@@ -21,32 +23,40 @@ export default function PedidosPage() {
         {pedidos.map((pedido) => (
           <div key={pedido.id} className="bg-white p-4 rounded-xl shadow">
             <div className="flex justify-between mb-2">
-
               <span className="text-sm font-semibold">
-                Pedido: {pedido.id.slice(0,6)}
+                Pedido: {pedido.id.slice(0, 6)}
               </span>
 
               <StatusPedido status={pedido.status} />
-
             </div>
 
             {pedido.itens.map((item) => (
               <div key={item.id} className="flex justify-between text-xs">
                 <span>
-                  {item.produto.nome} x{item.quantidade}
+                  {item.produto.nome} x {item.quantidade}
                 </span>
 
                 <span>R$ {item.subtotal.toFixed(2)}</span>
               </div>
             ))}
-            
+
             <p className="text-right text-[#8E000C] text-sm font-semibold mt-2">
               R$ {pedido.total.toFixed(2)}
             </p>
+
+            {pedido.status === "aberta" && (
+              <button
+                onClick={() => router.push(`/checkout/${pedido.id}`)}
+                className="mt-3 w-full bg-[#8E000C] text-white py-2 rounded-lg text-sm"
+              >
+                Pagar pedido
+              </button>
+            )}
           </div>
         ))}
       </div>
-      <BottomNav/>
+
+      <BottomNav />
     </div>
   );
 }
