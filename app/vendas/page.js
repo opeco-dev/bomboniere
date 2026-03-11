@@ -21,7 +21,7 @@ export default function VendasPage() {
     <div className="p-6">
       <div className="flex items-center">
         <AdminSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
-        <h1 className="text-lg font-semibold">Pedidos Recebidos</h1>
+        <h1 className="text-3xl font-bold">Pedidos Recebidos</h1>
       </div>
 
       <div className="space-y-4">

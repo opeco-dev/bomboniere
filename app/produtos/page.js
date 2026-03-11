@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import ProductImageUpload from "../components/ui/products/ProductImageUpload";
 import ProductEditModal from '../components/ui/products/ProductEditModal';
+import AdminSidebar from "../components/ui/AdminSideBar";
 
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState([]);
@@ -37,6 +39,8 @@ export default function ProdutosPage() {
       setLoading(false);
     }
   };
+
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -88,16 +92,11 @@ export default function ProdutosPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-          <div>
-            <Link
-              href="/dashboard"
-              className="text-blue-600 hover:underline mb-2 block"
-            >
-              ← Voltar
-            </Link>
+          <div className="flex items-center">
+            <AdminSidebar/>
             <h1 className="text-3xl font-bold text-gray-800">Produtos</h1>
           </div>
           <button

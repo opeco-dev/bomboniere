@@ -82,7 +82,7 @@ export default function DashboardPage() {
           ) : (
             <>
               <p className="text-xs text-gray-500 font-medium">Dashboard</p>
-              <p className="text-lg font-semibold text-gray-800 -mt-0.5">
+              <p className="text-3xl font-bold text-gray-800 -mt-0.5">
                 Visão geral
               </p>
             </>
@@ -90,13 +90,13 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-col items-end gap-1">
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+          <span className="text-[11px] px-2 py-1.5 rounded-full bg-gray-100 text-gray-600">
             {roleLabel}
           </span>
           <button
             type="button"
             onClick={() => router.replace("/login")}
-            className="text-[10px] text-gray-400 hover:text-gray-600"
+            className="text-[12px] text-gray-400 hover:text-gray-600"
           >
             Sair
           </button>
