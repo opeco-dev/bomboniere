@@ -84,6 +84,12 @@ async function main() {
       categoria: 'Balas',
       unidade: 'pacote',
 
+      imagens: {
+        create: {
+          url: "https://jscxuru740.ufs.sh/f/UaJpr1BGwMePseAc9IU0FOgM2iKU9V8HjAxlZtTWkhrX1qyR"
+        }
+      },
+
       estoque: {
         create: {
           quantidade: 100
@@ -92,10 +98,44 @@ async function main() {
     }
   })
 
+  const redbull = await prisma.produto.create({
+
+    data: {
+
+      nome: 'Redbull',
+      descricao: 'Energético Redbull 250ml',
+      preco: 15,
+      custoUnit: 9,
+      estoqueMin: 10,
+      categoria: 'Bebidas',
+      unidade: 'un',
+
+      imagens: {
+        create: [
+          {
+            url: "https://jscxuru740.ufs.sh/f/UaJpr1BGwMePbta4XrecZODGuWHLEYIgziqaFeVhXlktp1UT"
+          },
+          {
+            url: "https://jscxuru740.ufs.sh/f/UaJpr1BGwMePDICyztYWsIPST4zunCtf8GwcJXvHmRxAOMjZ"
+          }
+        ]
+      },
+
+      estoque: {
+        create: {
+          quantidade: 60
+        }
+      }
+
+    }
+
+  })
+
+
   console.log('✅ Seed concluído!')
   console.log('👤 Admin:', admin.email)
   console.log('🧍 Cliente:', usuarioCliente.email)
-  console.log('📦 Produtos criados:', [chocolate.nome, bala.nome])
+  console.log('📦 Produtos criados:', [chocolate.nome, bala.nome, redbull.nome])
 }
 
 main()

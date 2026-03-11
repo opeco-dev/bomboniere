@@ -63,7 +63,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="mb-4 text-sm text-red-500 text-center">
+            <div className="mb-4 text-sm text-[#8E000C] text-center">
               Email ou senha inválidos
             </div>
           )}
@@ -81,7 +81,7 @@ export default function LoginPage() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="email@gmail.com"
-                className="w-full mt-1 px-3 py-2 text-sm border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400"
+                className="w-full mt-1 px-3 py-2 text-sm border-2 border-[#8E000C] rounded-lg focus:outline-none focus:ring-2 focus:ring-red-800"
               />
             </div>
 
@@ -97,7 +97,7 @@ export default function LoginPage() {
                   value={form.password}
                   onChange={handleChange}
                   placeholder="********"
-                  className="w-full px-3 py-2 text-sm border border-red-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400"
+                  className="w-full px-3 py-2 text-sm border-2 border-[#8E000C] rounded-lg focus:outline-none focus:ring-2 focus:ring-red-800"
                 />
 
                 <button
@@ -105,7 +105,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-2.5 text-gray-400"
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  {showPassword ? <EyeOff color="#8E000C" size={18} /> : <Eye color="#8E000C" size={18} />}
                 </button>
               </div>
             </div>
@@ -119,7 +119,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-red-700 hover:bg-red-800 text-white py-2 rounded-lg text-sm font-medium transition"
+              className="w-full bg-[#8E000C] hover:bg-red-800 text-white py-2 rounded-lg text-sm font-medium transition"
             >
               {loading ? 'Entrando...' : 'Entrar'}
             </button>
