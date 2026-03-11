@@ -1,41 +1,48 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import BottomNav from '../components/ui/BottomNav';
-import AdminSidebar from '../components/ui/AdminSideBar';
-import ProductCard from '../components/ui/products/ProductCard';
-import ProductModal from '../components/ui/products/ProductModal';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import BottomNav from "../components/ui/BottomNav";
+import AdminSidebar from "../components/ui/AdminSideBar";
+import ProductCard from "../components/ui/products/ProductCard";
+import ProductModal from "../components/ui/products/ProductModal";
 
 const VIEWS = {
-  CLIENTE: 'cliente',
-  ADMIN: 'admin',
+  CLIENTE: "cliente",
+  ADMIN: "admin",
 };
 
 export default function DashboardPage() {
-  const [produtos, setProdutos] = useState([])
-  const [produtoSelecionado, setProdutoSelecionado] = useState(null)
-  const [modalOpen, setModalOpen] = useState(false)
+  const [saldo, setSaldo] = useState(0);
+  const [produtos, setProdutos] = useState([]);
+  const [produtoSelecionado, setProdutoSelecionado] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/clientes/saldo")
+      .then((res) => res.json())
+      .then((data) => setSaldo(data.saldo || 0));
+  }, []);
 
   useEffect(() => {
     fetch("/api/produtos")
-      .then(res => res.json())
-      .then(data => setProdutos(data))
-  }, [])
+      .then((res) => res.json())
+      .then((data) => setProdutos(data));
+  }, []);
 
   function abrirProduto(produto) {
-    setProdutoSelecionado(produto)
-    setModalOpen(true)
+    setProdutoSelecionado(produto);
+    setModalOpen(true);
   }
-  
+
   const { data: session, status } = useSession();
   const router = useRouter();
-  
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#fff5f7]">
         <span className="text-sm text-gray-600">Carregando seu painel...</span>
@@ -43,15 +50,15 @@ export default function DashboardPage() {
     );
   }
 
-  if (status === 'unauthenticated') {
-    router.replace('/login');
+  if (status === "unauthenticated") {
+    router.replace("/login");
     return null;
   }
 
-  const role = session?.user?.role || 'user';
-  const view = role === 'admin' ? VIEWS.ADMIN : VIEWS.CLIENTE;
+  const role = session?.user?.role || "user";
+  const view = role === "admin" ? VIEWS.ADMIN : VIEWS.CLIENTE;
 
-  const roleLabel = role === 'admin' ? 'Administrador' : 'Cliente';
+  const roleLabel = role === "admin" ? "Administrador" : "Cliente";
 
   return (
     <div className="min-h-screen bg-[#fafafa] flex flex-col">
@@ -68,7 +75,9 @@ export default function DashboardPage() {
           {view === VIEWS.CLIENTE ? (
             <>
               <p className="text-xs text-gray-500 font-medium">Saldo Devedor</p>
-              <p className="text-xl font-semibold text-[#8E000C] -mt-0.5">R$ -4,70</p>
+              <p className="text-xl font-semibold text-[#8E000C] -mt-0.5">
+                R$ {(saldo || 0).toFixed(2)}
+              </p>
             </>
           ) : (
             <>
@@ -86,7 +95,7 @@ export default function DashboardPage() {
           </span>
           <button
             type="button"
-            onClick={() => router.replace('/login')}
+            onClick={() => router.replace("/login")}
             className="text-[10px] text-gray-400 hover:text-gray-600"
           >
             Sair
@@ -115,7 +124,7 @@ export default function DashboardPage() {
   );
 }
 
-function SearchInput({ placeholder = 'Pesquisar' }) {
+function SearchInput({ placeholder = "Pesquisar" }) {
   return (
     <div className="w-full mb-4">
       <div className="flex items-center gap-2 bg-white rounded-full px-3 py-2 shadow-sm border border-gray-100">
@@ -134,12 +143,20 @@ function SectionHeader({ title }) {
   return (
     <div className="flex items-center justify-between mb-2">
       <h2 className="text-sm font-semibold text-gray-800">{title}</h2>
-      <button className="text-[11px] font-medium text-gray-500">Ver tudo</button>
+      <button className="text-[11px] font-medium text-gray-500">
+        Ver tudo
+      </button>
     </div>
   );
 }
 
-function ClientDashboard({produtos, abrirProduto, produtoSelecionado, modalOpen, setModalOpen}) {
+function ClientDashboard({
+  produtos,
+  abrirProduto,
+  produtoSelecionado,
+  modalOpen,
+  setModalOpen,
+}) {
   return (
     <>
       <SearchInput placeholder="Buscar produtos" />
@@ -175,7 +192,6 @@ function StatCard({ label, value, sublabel }) {
 }
 
 function MiniBarChart({ values }) {
-
   return (
     <div className="flex items-end gap-1 h-32">
       {values.map((v, idx) => (
@@ -190,16 +206,16 @@ function MiniBarChart({ values }) {
 }
 
 function AdminDashboard() {
-  const [stats, setStats] = useState(null)
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    fetch('/api/dashboard')
-      .then(res => res.json())
-      .then(data => setStats(data))
-  }, [])
+    fetch("/api/dashboard")
+      .then((res) => res.json())
+      .then((data) => setStats(data));
+  }, []);
 
   if (!stats) {
-    return <p className="text-sm text-gray-500">Carregando dados...</p>
+    return <p className="text-sm text-gray-500">Carregando dados...</p>;
   }
   return (
     <>
@@ -207,18 +223,24 @@ function AdminDashboard() {
 
       {/* Cards de resumo */}
       <section className="grid grid-cols-2 gap-3 mb-4">
-        <StatCard label="Total em Vendas Hoje" value={`R$ ${stats.vendasHoje.toFixed(2)}`} />
+        <StatCard
+          label="Total em Vendas Hoje"
+          value={`R$ ${stats.vendasHoje.toFixed(2)}`}
+        />
         <StatCard label="Total de Produtos" value={stats.totalProdutos} />
         <StatCard label="Lucro Líquido Hoje" value="R$ 1.234,00" />
-        <StatCard label="Itens em Estoque" value={stats.itensEstoque}
-      />
+        <StatCard label="Itens em Estoque" value={stats.itensEstoque} />
       </section>
 
       {/* Gráfico simples */}
       <section className="bg-white rounded-2xl p-3 shadow-sm mb-4">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold text-gray-800">Total em Vendas</h2>
-          <span className="text-xs text-[#8E000C] font-semibold">R$ 1.234,00</span>
+          <h2 className="text-sm font-semibold text-gray-800">
+            Total em Vendas
+          </h2>
+          <span className="text-xs text-[#8E000C] font-semibold">
+            R$ 1.234,00
+          </span>
         </div>
 
         <div className="flex items-center justify-between mb-3 gap-1">
@@ -236,14 +258,18 @@ function AdminDashboard() {
           </button>
         </div>
 
-        <MiniBarChart values={[12,18,10,20,14,17,19]}/>
+        <MiniBarChart values={[12, 18, 10, 20, 14, 17, 19]} />
       </section>
 
       {/* Tabela de produtos vendidos */}
       <section className="bg-white rounded-2xl p-3 shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold text-gray-800">Produtos Vendidos</h2>
-          <button className="text-[11px] text-gray-500 font-medium">Ver todos</button>
+          <h2 className="text-sm font-semibold text-gray-800">
+            Produtos Vendidos
+          </h2>
+          <button className="text-[11px] text-gray-500 font-medium">
+            Ver todos
+          </button>
         </div>
 
         <div className="overflow-x-auto">

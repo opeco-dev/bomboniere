@@ -9,7 +9,7 @@ export default function VendasPage() {
   const [vendas, setVendas] = useState([]);
 
   useEffect(() => {
-    fetch("/api/pedidos")
+    fetch("/api/pedidos/admin")
       .then((res) => res.json())
       .then(setVendas);
   }, []);

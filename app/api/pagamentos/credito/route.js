@@ -8,6 +8,13 @@ export async function POST(req) {
     where: { id: body.vendaId },
   });
 
+  if (!venda) {
+    return NextResponse.json(
+      { error: "Venda não encontrada" },
+      { status: 404 },
+    );
+  }
+
   await prisma.contaReceber.create({
     data: {
       vendaId: venda.id,
@@ -25,6 +32,13 @@ export async function POST(req) {
           },
         ],
       },
+    },
+  });
+
+  await prisma.venda.update({
+    where: { id: venda.id },
+    data: {
+      status: "finalizada",
     },
   });
 

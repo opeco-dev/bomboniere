@@ -10,7 +10,6 @@ export default function CarrinhoPage() {
   const router = useRouter();
 
   const pagarAgora = async () => {
-
     const res = await fetch("/api/pedidos", {
       method: "POST",
       headers: {
@@ -22,32 +21,34 @@ export default function CarrinhoPage() {
     const data = await res.json();
 
     if (res.ok) {
-
       clearCart();
 
       router.push(`/checkout/${data.id}`);
-
     }
-
   };
 
   async function pagarDepois() {
-    await fetch("/api/pagamentos/credito", {
+    const res = await fetch("/api/pedidos", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
-        vendaId: pedidoId,
+        itens: cart,
+        status: "aberta",
       }),
     });
 
-    alert("Pedido registrado para pagamento futuro");
+    if (!res.ok) return;
+
+    clearCart();
+
+    router.push("/pedidos");
   }
 
   return (
     <div className="p-4 pb-32">
-
-      <h1 className="text-xl font-bold mb-4">
-        Carrinho
-      </h1>
+      <h1 className="text-xl font-bold mb-4">Carrinho</h1>
 
       <div className="space-y-3">
         {cart.map((item) => (
@@ -56,15 +57,10 @@ export default function CarrinhoPage() {
       </div>
 
       <div className="fixed bottom-12 left-0 right-0 bg-white p-4 shadow">
-
         <div className="flex justify-between text-lg font-bold mb-3">
-
           <span>Total:</span>
 
-          <span className="text-[#8E000C]">
-            R$ {total.toFixed(2)}
-          </span>
-
+          <span className="text-[#8E000C]">R$ {total.toFixed(2)}</span>
         </div>
 
         <button
@@ -74,13 +70,15 @@ export default function CarrinhoPage() {
           Pagar Agora
         </button>
 
-        <button onClick={pagarDepois} className="w-full border-2 rounded-full my-3 py-3">
+        <button
+          onClick={pagarDepois}
+          className="w-full border-2 rounded-full my-3 py-3"
+        >
           Pagar depois
         </button>
       </div>
 
-      <BottomNav/>
-
+      <BottomNav />
     </div>
   );
 }

@@ -4,36 +4,52 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../api/auth/[...nextauth]/route";
 
 export async function POST(req) {
+
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+    return NextResponse.json(
+      { error: "Não autenticado" },
+      { status: 401 }
+    );
   }
 
   const body = await req.json();
   const itens = body.itens;
 
-  
-  // buscar cliente do usuario
+  if (!itens || itens.length === 0) {
+    return NextResponse.json(
+      { error: "Carrinho vazio" },
+      { status: 400 }
+    );
+  }
+
+  // buscar cliente do usuário logado
   const cliente = await prisma.cliente.findUnique({
     where: {
-      usuarioId: session.user.id,
-    },
+      usuarioId: session.user.id
+    }
   });
 
   if (!cliente) {
-    return NextResponse.json({
-      error: "Cliente não encontrado",
-    });
+    return NextResponse.json(
+      { error: "Cliente não encontrado" },
+      { status: 404 }
+    );
   }
 
-  const total = itens.reduce((sum, i) => sum + i.preco * i.quantidade, 0);
+  // calcular total
+  const total = itens.reduce(
+    (sum, i) => sum + i.preco * i.quantidade,
+    0
+  );
 
+  // criar venda
   const venda = await prisma.venda.create({
     data: {
       clienteId: cliente.id,
-
-      total,
+      total: total,
+      status: "aberta",
 
       itens: {
         create: itens.map((i) => ({
@@ -66,19 +82,45 @@ export async function POST(req) {
   }
 
   return NextResponse.json(venda);
+
 }
 
 export async function GET() {
 
-  const vendas = await prisma.venda.findMany({
-    include: {
-      cliente: true,
-      itens: {
-        include: { produto: true }
-      }
-    }
-  })
+  const session = await getServerSession(authOptions);
 
-  return NextResponse.json(vendas)
+  if (!session) {
+    return NextResponse.json([], { status: 401 });
+  }
+
+  const cliente = await prisma.cliente.findUnique({
+    where: {
+      usuarioId: session.user.id
+    }
+  });
+
+  if (!cliente) {
+    return NextResponse.json([]);
+  }
+
+  const vendas = await prisma.venda.findMany({
+    where: {
+      clienteId: cliente.id
+    },
+
+    include: {
+      itens: {
+        include: {
+          produto: true
+        }
+      }
+    },
+
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  return NextResponse.json(vendas);
 
 }

@@ -6,8 +6,15 @@ import BottomNav from "../components/ui/BottomNav";
 import StatusPedido from "../components/ui/StatusPedido";
 
 export default function PedidosPage() {
+  const [saldo, setSaldo] = useState(0);
   const [pedidos, setPedidos] = useState([]);
   const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/clientes/saldo")
+      .then((res) => res.json())
+      .then((data) => setSaldo(data.saldo || 0));
+  }, []);
 
   useEffect(() => {
     fetch("/api/pedidos")
@@ -18,7 +25,13 @@ export default function PedidosPage() {
   return (
     <div className="p-4 pb-28">
       <h1 className="text-lg font-semibold mb-4">Meus Pedidos</h1>
+      <div className="bg-white rounded-xl shadow p-4 mb-4">
+        <p className="text-xs text-gray-500">Saldo Devedor</p>
 
+        <p className="text-lg font-semibold text-[#8E000C]">
+          R$ {(saldo ?? 0).toFixed(2)}
+        </p>
+      </div>
       <div className="space-y-4">
         {pedidos.map((pedido) => (
           <div key={pedido.id} className="bg-white p-4 rounded-xl shadow">
