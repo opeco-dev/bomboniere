@@ -1,33 +1,35 @@
-import { NextResponse } from "next/server"
 import { prisma } from "@/app/lib/prisma"
+import client from "@/app/lib/mercadopago"
+import { Payment } from "mercadopago"
+import { NextResponse } from "next/server"
 
 export async function POST(req) {
 
   const body = await req.json()
-    console.log("Webhook recebido:", body)
 
-  const paymentId = body.data?.id
-
-  if (!paymentId) {
+  if (body.type !== "payment") {
     return NextResponse.json({ ok: true })
   }
 
-  const venda = await prisma.venda.findFirst({
-    where: {
-      pagamentoId: String(paymentId)
-    }
+  const paymentClient = new Payment(client)
+
+  const payment = await paymentClient.get({
+    id: body.data.id
   })
 
-  if (!venda) {
-    return NextResponse.json({ ok: true })
+  if (payment.status === "approved") {
+
+    await prisma.venda.update({
+      where: {
+        pagamentoId: String(payment.id)
+      },
+      data: {
+        status: "paga"
+      }
+    })
+
   }
-
-  await prisma.venda.update({
-    where: { id: venda.id },
-    data: {
-      status: "pago"
-    }
-  })
 
   return NextResponse.json({ ok: true })
+
 }

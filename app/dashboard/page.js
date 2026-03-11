@@ -76,7 +76,7 @@ export default function DashboardPage() {
             <>
               <p className="text-xs text-gray-500 font-medium">Saldo Devedor</p>
               <p className="text-xl font-semibold text-[#8E000C] -mt-0.5">
-                R$ {(saldo || 0).toFixed(2)}
+                R$ -{(saldo || 0).toFixed(2)}
               </p>
             </>
           ) : (

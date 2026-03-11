@@ -29,7 +29,7 @@ export default function PedidosPage() {
         <p className="text-xs text-gray-500">Saldo Devedor</p>
 
         <p className="text-lg font-semibold text-[#8E000C]">
-          R$ {(saldo ?? 0).toFixed(2)}
+          R$ -{(saldo ?? 0).toFixed(2)}
         </p>
       </div>
       <div className="space-y-4">
