@@ -105,7 +105,8 @@ export async function GET() {
 
   const vendas = await prisma.venda.findMany({
     where: {
-      clienteId: cliente.id
+      clienteId: cliente.id,
+      ativo: true
     },
 
     include: {

@@ -68,6 +68,7 @@ CREATE TABLE "Venda" (
     "clienteId" TEXT,
     "total" REAL NOT NULL,
     "desconto" REAL NOT NULL DEFAULT 0,
+    "ativo" BOOLEAN NOT NULL DEFAULT true,
     "status" TEXT NOT NULL DEFAULT 'aberta',
     "observacoes" TEXT,
     "pagamentoId" TEXT,

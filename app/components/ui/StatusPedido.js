@@ -15,6 +15,11 @@ export default function StatusPedido({ status }) {
     pago: {
       color: "text-green-600 bg-green-100 rounded-xl",
       label: "Pago"
+    },
+
+    cancelado: {
+      color: "text-gray-500 bg-gray-200 rounded-xl",
+      label: "Cancelado"
     }
 
   }

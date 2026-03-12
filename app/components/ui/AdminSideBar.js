@@ -13,7 +13,7 @@ export default function AdminSidebar() {
   const menu = [
     { href: "/dashboard", label: "Início" },
     { href: "/produtos", label: "Produtos" },
-    { href: "/vendas", label: "Pedidos" },
+    { href: "/vendas", label: "Vendas" },
     { href: "/clientes", label: "Clientes" },
     { href: "/analise", label: "Análise" },
     { href: "/configuracoes", label: "Configurações" },
