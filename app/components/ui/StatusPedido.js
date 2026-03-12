@@ -22,7 +22,7 @@ export default function StatusPedido({ status }) {
   const s = styles[status] || styles.aberta
 
   return (
-    <span className={`text-xs font-semibold justify-center items-center text-center pt-1 px-2 h-6 ${s.color}`}>
+    <span className={`text-xs font-semibold justify-center items-center text-center py-1 px-2 h-6 ${s.color}`}>
       {s.label}
     </span>
   )

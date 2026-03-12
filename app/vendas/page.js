@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import StatusPedido from "../components/ui/StatusPedido";
 import AdminSidebar from "../components/ui/AdminSideBar";
+import { formatDateTime } from "@/app/lib/utils"
 
 export default function VendasPage() {
   const [vendas, setVendas] = useState([]);
@@ -28,14 +29,18 @@ export default function VendasPage() {
         {vendas.map((venda) => (
           <div key={venda.id} className="bg-white p-4 rounded-xl shadow">
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-semibold">
-                Pedido: {venda.id.slice(0, 6)}
-                <p className="text-xs text-gray-500 mb-2">
-                  Cliente: {venda.cliente?.nome || "Cliente não identificado"}
-                </p>
+              <div className="flex gap-2">
+                <span className="text-sm font-semibold">
+                  Pedido: {venda.id.slice(0, 6)}
+                  <p className="text-xs text-gray-500 mb-2">
+                    Cliente: {venda.cliente?.nome || "Cliente não identificado"}
+                  </p>
+                </span>
+                <StatusPedido status={venda.status} />
+              </div>
+              <span className="text-sm text-gray-500 bg-slate-100 justify-center items-center h-5 px-2 rounded-full">
+                {formatDateTime(venda.createdAt)}
               </span>
-
-              <StatusPedido status={venda.status} />
             </div>
 
             {venda.itens.map((item) => (
@@ -48,7 +53,7 @@ export default function VendasPage() {
               </div>
             ))}
 
-            <p className="text-right text-[#8E000C] text-sm font-semibold mt-2">
+            <p className="text-right text-[#8E000C] text-md font-bold mt-2">
               R$ {venda.total.toFixed(2)}
             </p>
           </div>

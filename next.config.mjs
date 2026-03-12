@@ -4,13 +4,15 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'utfs.io', 
-        hostname: 'jscxuru740.ufs.sh'
-      }
-    ]
-  }
-
+        protocol: "https",
+        hostname: "*.ufs.sh",
+      },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

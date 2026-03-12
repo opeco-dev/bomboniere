@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BottomNav from "../components/ui/BottomNav";
 import StatusPedido from "../components/ui/StatusPedido";
+import { formatDateTime } from "@/app/lib/utils"
 
 export default function PedidosPage() {
   const [saldo, setSaldo] = useState(0);
@@ -36,11 +37,16 @@ export default function PedidosPage() {
         {pedidos.map((pedido) => (
           <div key={pedido.id} className="bg-white p-4 rounded-xl shadow">
             <div className="flex justify-between mb-2">
-              <span className="text-sm font-semibold">
+              <div>
+              <span className="text-sm font-semibold mr-2">
                 Pedido: {pedido.id.slice(0, 6)}
               </span>
-
-              <StatusPedido status={pedido.status} />
+                <StatusPedido status={pedido.status} />
+              </div>
+             
+              <span className="text-sm text-gray-500 bg-slate-100 py-1 px-2 rounded-full">
+                {formatDateTime(pedido.createdAt)}
+              </span>              
             </div>
 
             {pedido.itens.map((item) => (
@@ -53,7 +59,7 @@ export default function PedidosPage() {
               </div>
             ))}
 
-            <p className="text-right text-[#8E000C] text-sm font-semibold mt-2">
+            <p className="text-right text-[#8E000C] text-md font-bold mt-2">
               R$ {pedido.total.toFixed(2)}
             </p>
 
