@@ -9,6 +9,9 @@ export async function POST(req) {
 
     const venda = await prisma.venda.findUnique({
       where: { id: body.vendaId },
+      include: {
+        cliente: true,
+      },
     });
 
     if (!venda) {
@@ -17,6 +20,10 @@ export async function POST(req) {
         { status: 404 },
       );
     }
+
+    // expiração 10 minutos
+    const expiration = new Date(Date.now() + 10 * 60 * 1000);
+
     const payment = new Payment(client);
 
     const result = await payment.create({
@@ -24,17 +31,21 @@ export async function POST(req) {
         transaction_amount: Number(venda.total),
         description: `Pedido ${venda.id}`,
         payment_method_id: "pix",
+
+        date_of_expiration: expiration.toISOString(),
+
         payer: {
-          email: "cliente@email.com",
+          email: venda.cliente?.email || "cliente@email.com",
         },
       },
     });
 
-    // salvar id do pagamento na venda
+    // salva pagamento no pedido
     await prisma.venda.update({
       where: { id: venda.id },
       data: {
         pagamentoId: String(result.id),
+        pixExpiraEm: expiration,
       },
     });
 
@@ -44,6 +55,7 @@ export async function POST(req) {
       qrBase64: pixData.qr_code_base64,
       copiaCola: pixData.qr_code,
       link: pixData.ticket_url,
+      expiraEm: expiration,
     });
   } catch (error) {
     console.error(error);

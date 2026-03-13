@@ -1,35 +1,58 @@
-import { prisma } from "@/app/lib/prisma"
-import client from "@/app/lib/mercadopago"
-import { Payment } from "mercadopago"
-import { NextResponse } from "next/server"
+import { prisma } from "@/app/lib/prisma";
+import client from "@/app/lib/mercadopago";
+import { Payment } from "mercadopago";
+import { NextResponse } from "next/server";
 
 export async function POST(req) {
+  try {
+    const url = new URL(req.url);
 
-  const body = await req.json()
+    const paymentId = url.searchParams.get("data.id");
 
-  if (body.type !== "payment") {
-    return NextResponse.json({ ok: true })
-  }
+    const type = url.searchParams.get("type");
 
-  const paymentClient = new Payment(client)
+    if (type !== "payment" || !paymentId) {
+      return NextResponse.json({ ok: true });
+    }
 
-  const payment = await paymentClient.get({
-    id: body.data.id
-  })
+    const paymentClient = new Payment(client);
 
-  if (payment.status === "approved") {
+    const payment = await paymentClient.get({
+      id: paymentId,
+    });
 
-    await prisma.venda.update({
-      where: {
-        pagamentoId: String(payment.id)
-      },
-      data: {
-        status: "paga"
+    if (payment.status === "approved") {
+      const venda = await prisma.venda.findUnique({
+        where: {
+          pagamentoId: String(payment.id),
+        },
+      });
+
+      if (!venda) {
+        console.log("Venda não encontrada:", payment.id);
+        return NextResponse.json({ ok: true });
       }
-    })
 
+      await prisma.venda.update({
+        where: { id: venda.id },
+        data: { status: "pago" },
+      });
+
+      await prisma.contaReceber.updateMany({
+        where: { vendaId: venda.id },
+        data: {
+          status: "pago",
+          saldo: 0,
+        },
+      });
+
+      console.log("Pagamento confirmado:", venda.id);
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    console.error("Webhook erro:", error);
+
+    return NextResponse.json({ error: "Webhook error" }, { status: 500 });
   }
-
-  return NextResponse.json({ ok: true })
-
 }

@@ -73,6 +73,7 @@ CREATE TABLE "Venda" (
     "observacoes" TEXT,
     "pagamentoId" TEXT,
     "dataVenda" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "pixExpiraEm" DATETIME,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     CONSTRAINT "Venda_clienteId_fkey" FOREIGN KEY ("clienteId") REFERENCES "Cliente" ("id") ON DELETE SET NULL ON UPDATE CASCADE
@@ -135,3 +136,6 @@ CREATE UNIQUE INDEX "Usuario_email_key" ON "Usuario"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Cliente_usuarioId_key" ON "Cliente"("usuarioId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Venda_pagamentoId_key" ON "Venda"("pagamentoId");
