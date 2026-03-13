@@ -1,57 +1,29 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from "@/app/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function GET() {
-  const hoje = new Date()
-  hoje.setHours(0, 0, 0, 0)
-
-  const vendasHoje = await prisma.venda.aggregate({
-    _sum: { total: true },
-    where: {
-      dataVenda: {
-        gte: hoje
-      }
-    }
-  })
-
-  const totalProdutos = await prisma.produto.count()
-
-  const itensEstoque = await prisma.estoque.aggregate({
-    _sum: { quantidade: true }
-  })
-
-  const topProdutos = await prisma.itemVenda.groupBy({
-    by: ['produtoId'],
-    _sum: {
-      quantidade: true,
-      subtotal: true
-    },
+  const produtos = await prisma.itemVenda.groupBy({
+    by: ["produtoId"],
+    _sum: { quantidade: true },
     orderBy: {
-      _sum: {
-        quantidade: 'desc'
-      }
+      _sum: { quantidade: "desc" },
     },
-    take: 5
-  })
+    take: 5,
+  });
 
-  const produtos = await prisma.produto.findMany()
+  const resultado = await Promise.all(
+    produtos.map(async (p) => {
+      const produto = await prisma.produto.findUnique({
+        where: { id: p.produtoId },
+      });
 
-  const produtosVendidos = topProdutos.map((item) => {
-    const produto = produtos.find((p) => p.id === item.produtoId)
+      return {
+        nome: produto.nome,
+        preco: produto.preco,
+        vendas: p._sum.quantidade,
+      };
+    }),
+  );
 
-    return {
-      nome: produto?.nome || 'Produto',
-      categoria: produto?.categoria || '',
-      quantidade: item._sum.quantidade,
-      total: item._sum.subtotal
-    }
-  })
-
-  return Response.json({
-    vendasHoje: vendasHoje._sum.total || 0,
-    totalProdutos,
-    itensEstoque: itensEstoque._sum.quantidade || 0,
-    produtosVendidos
-  })
+  return NextResponse.json(resultado);
 }

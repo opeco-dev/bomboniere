@@ -8,6 +8,11 @@ import BottomNav from "../components/ui/BottomNav";
 import AdminSidebar from "../components/ui/AdminSideBar";
 import ProductCard from "../components/ui/products/ProductCard";
 import ProductModal from "../components/ui/products/ProductModal";
+import KpiCards from "../components/graficos/kpi-cards";
+import GraficoLucro from "../components/graficos/grafico-lucro";
+import ProdutosMaisVendidos from "../components/graficos/produtos-mais-vendidos";
+import PedidosRecentes from "../components/graficos/pedidos-recentes";
+import FiltroPeriodo from "../components/ui/FiltroPeriodo";
 
 const VIEWS = {
   CLIENTE: "cliente",
@@ -19,6 +24,7 @@ export default function DashboardPage() {
   const [produtos, setProdutos] = useState([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [periodo,setPeriodo]=useState("all");
 
   useEffect(() => {
     fetch("/api/clientes/saldo")
@@ -191,20 +197,6 @@ function StatCard({ label, value, sublabel }) {
   );
 }
 
-function MiniBarChart({ values }) {
-  return (
-    <div className="flex items-end gap-1 h-32">
-      {values.map((v, idx) => (
-        <div
-          key={idx}
-          className="flex-1 rounded-full bg-[#ffd4dd]"
-          style={{ height: `${v * 4}px` }}
-        />
-      ))}
-    </div>
-  );
-}
-
 function AdminDashboard() {
   const [stats, setStats] = useState(null);
 
@@ -222,7 +214,7 @@ function AdminDashboard() {
       <SearchInput placeholder="Pesquisar produtos, clientes..." />
 
       {/* Cards de resumo */}
-      <section className="grid grid-cols-2 gap-3 mb-4">
+      {/* <section className="grid grid-cols-2 gap-3 mb-4">
         <StatCard
           label="Total em Vendas Hoje"
           value={`R$ ${stats.vendasHoje.toFixed(2)}`}
@@ -230,39 +222,29 @@ function AdminDashboard() {
         <StatCard label="Total de Produtos" value={stats.totalProdutos} />
         <StatCard label="Lucro Líquido Hoje" value="R$ 1.234,00" />
         <StatCard label="Itens em Estoque" value={stats.itensEstoque} />
-      </section>
+      </section> */}
 
       {/* Gráfico simples */}
-      <section className="bg-white rounded-2xl p-3 shadow-sm mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold text-gray-800">
-            Total em Vendas
-          </h2>
-          <span className="text-xs text-[#8E000C] font-semibold">
-            R$ 1.234,00
-          </span>
+      <div className="mb-6">
+        
+        <KpiCards/>
+      </div>
+
+      <div className="grid grid-cols-3 gap-6 mb-6">
+
+        <div className="col-span-2">
+          <GraficoLucro/>
         </div>
 
-        <div className="flex items-center justify-between mb-3 gap-1">
-          <button className="px-3 py-1 rounded-full text-[11px] font-semibold bg-[#8E000C] text-white">
-            Hoje
-          </button>
-          <button className="px-3 py-1 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
-            7d
-          </button>
-          <button className="px-3 py-1 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
-            30d
-          </button>
-          <button className="px-3 py-1 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">
-            12m
-          </button>
-        </div>
+        <ProdutosMaisVendidos/>
 
-        <MiniBarChart values={[12, 18, 10, 20, 14, 17, 19]} />
-      </section>
+      </div>
+
+      <PedidosRecentes/>
+
 
       {/* Tabela de produtos vendidos */}
-      <section className="bg-white rounded-2xl p-3 shadow-sm">
+      {/* <section className="bg-white rounded-2xl p-3 shadow-sm">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-sm font-semibold text-gray-800">
             Produtos Vendidos
@@ -296,7 +278,7 @@ function AdminDashboard() {
             </tbody>
           </table>
         </div>
-      </section>
+      </section> */}
     </>
   );
 }
