@@ -78,19 +78,18 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!pixQr) return;
 
-    const intervalo = setInterval(async () => {
-      const res = await fetch(`/api/pagamentos/status/${pedidoId}`);
+    const eventSource = new EventSource(`/api/pagamentos/stream/${pedidoId}`);
 
-      const data = await res.json();
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
 
       if (data.status === "pago") {
-        clearInterval(intervalo);
-
+        eventSource.close();
         router.push(`/checkout/${pedidoId}/sucesso`);
       }
-    }, 3000);
+    };
 
-    return () => clearInterval(intervalo);
+    return () => eventSource.close();
   }, [pixQr]);
 
   if (!pedido) return <p className="p-6">Carregando...</p>;

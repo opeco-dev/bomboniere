@@ -2,6 +2,7 @@ import { prisma } from "@/app/lib/prisma";
 import client from "@/app/lib/mercadopago";
 import { Payment } from "mercadopago";
 import { NextResponse } from "next/server";
+import { paymentEvents } from "@/app/lib/paymentEvents";
 
 export async function POST(req) {
   try {
@@ -36,6 +37,11 @@ export async function POST(req) {
       await prisma.venda.update({
         where: { id: venda.id },
         data: { status: "pago" },
+      });
+
+      paymentEvents.emit("payment", {
+        pedidoId: venda.id,
+        status: "pago",
       });
 
       await prisma.contaReceber.updateMany({
