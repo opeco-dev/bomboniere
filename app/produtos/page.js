@@ -1,17 +1,19 @@
 "use client";
+
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import ProductImageUpload from "../components/ui/products/ProductImageUpload";
-import ProductEditModal from '../components/ui/products/ProductEditModal';
 import AdminSidebar from "../components/ui/AdminSideBar";
+import ProductImageUpload from "../components/ui/products/ProductImageUpload";
+import ProductEditModal from "../components/ui/products/ProductEditModal";
 
 export default function ProdutosPage() {
   const [produtos, setProdutos] = useState([]);
-  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const [showForm, setShowForm] = useState(false);
   const [selectedProduto, setSelectedProduto] = useState(null);
+
+  const [images, setImages] = useState([]);
+
   const [formData, setFormData] = useState({
     nome: "",
     descricao: "",
@@ -33,28 +35,48 @@ export default function ProdutosPage() {
       const res = await fetch("/api/produtos");
       const data = await res.json();
       setProdutos(data);
-      setLoading(false);
     } catch (error) {
-      console.error("Erro ao buscar produtos:", error);
+      console.error(error);
+    } finally {
       setLoading(false);
     }
   };
 
-  const router = useRouter();
+  const formatarData = (data) => {
+    if (!data) return "-";
+    return new Date(data).toLocaleDateString("pt-BR");
+  };
+
+  const pegarValidadeMaisProxima = (estoque) => {
+    if (!estoque || estoque.length === 0) return null;
+
+    const comValidade = estoque.filter((e) => e.dataValidade);
+
+    if (comValidade.length === 0) return null;
+
+    const maisProxima = comValidade.sort(
+      (a, b) => new Date(a.dataValidade) - new Date(b.dataValidade),
+    )[0];
+
+    return maisProxima.dataValidade;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const res = await fetch("/api/produtos", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
-        alert("Produto criado com sucesso!");
         setShowForm(false);
         setImages([]);
+
         setFormData({
           nome: "",
           descricao: "",
@@ -64,295 +86,150 @@ export default function ProdutosPage() {
           categoria: "",
           unidade: "un",
           quantidadeInicial: "0",
+          imagens: [],
         });
+
         fetchProdutos();
       } else {
         alert("Erro ao criar produto");
       }
     } catch (error) {
-      console.error("Erro:", error);
-      alert("Erro ao criar produto");
+      console.error(error);
     }
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Carregando...</div>
+        Carregando...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="mx-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center">
-            <AdminSidebar/>
-            <h1 className="text-3xl font-bold text-gray-800">Produtos</h1>
+    <div className="min-h-screen bg-[#fafafa] p-4 md:p-6 overflow-x-hidden">
+      <div className="mx-auto w-full max-w-[1400px]">
+        {/* HEADER */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <AdminSidebar />
+            <h1 className="text-2xl md:text-3xl font-bold">Produtos</h1>
           </div>
+
           <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition"
+            onClick={() => setShowForm(true)}
+            className="bg-[#8E000C] hover:bg-[#6d0009] text-white font-semibold px-4 py-2 rounded-full"
           >
-            {showForm ? "Cancelar" : "+ Novo Produto"}
+            + Novo Produto
           </button>
         </div>
 
-        {/* Formulário */}
-        {showForm && (
-          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-            <h2 className="text-xl font-bold mb-4">Novo Produto</h2>
-            <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <label className="block text-sm font-bold mb-2">
-                  Imagens do Produto
-                </label>
-
-                <ProductImageUpload
-                  onUpload={(urls) => {
-                    setImages(urls);
-                    setFormData((prev) => ({
-                      ...prev,
-                      imagens: urls,
-                    }));
-                  }}
-                />
-
-                {images.length > 0 && (
-                  <div className="flex gap-2 mt-3 flex-wrap">
-                    {images.map((img, i) => (
-                      <img
-                        key={i}
-                        src={img}
-                        className="w-20 h-20 object-cover rounded-lg border"
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-bold mb-2">Nome *</label>
-                <input
-                  type="text"
-                  name="nome"
-                  value={formData.nome}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold mb-2">
-                  Categoria *
-                </label>
-                <select
-                  name="categoria"
-                  value={formData.categoria}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                >
-                  <option disabled>Selecione a Categoria</option>
-                  <option value="Doce">Doce</option>
-                  <option value="Bebida">Bebida</option>
-                  <option value="Salgado">Salgado</option>
-                  <option value="Sorvete">Sorvete</option>
-                  <option value="Chocolate">Chocolate</option>
-                </select>
-              </div>
-
-              <div className="col-span-2">
-                <label className="block text-sm font-bold mb-2">
-                  Descrição
-                </label>
-                <textarea
-                  name="descricao"
-                  value={formData.descricao}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                  rows="2"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold mb-2">
-                  Preço de Venda (R$) *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="preco"
-                  value={formData.preco}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold mb-2">
-                  Custo Unitário (R$) *
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  name="custoUnit"
-                  value={formData.custoUnit}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold mb-2">
-                  Estoque Mínimo *
-                </label>
-                <input
-                  type="number"
-                  name="estoqueMin"
-                  value={formData.estoqueMin}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold mb-2">
-                  Unidade *
-                </label>
-                <select
-                  name="unidade"
-                  value={formData.unidade}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                  required
-                >
-                  <option value="un">Unidade</option>
-                  <option value="kg">Quilograma</option>
-                  <option value="g">Grama</option>
-                  <option value="caixa">Caixa</option>
-                  <option value="pacote">Pacote</option>
-                  <option value="litro">Litro</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold mb-2">
-                  Quantidade Inicial
-                </label>
-                <input
-                  type="number"
-                  name="quantidadeInicial"
-                  value={formData.quantidadeInicial}
-                  onChange={handleChange}
-                  className="w-full border rounded px-3 py-2"
-                />
-              </div>
-
-              <div className="col-span-2">
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition"
-                >
-                  Salvar Produto
-                </button>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {/* Lista de Produtos */}
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="w-full">
+        {/* TABELA DESKTOP */}
+        <div className="hidden md:block bg-white rounded-xl shadow overflow-x-auto">
+          <table className="w-full text-sm min-w-[700px]">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">
-                  Produto
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">
-                  Categoria
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">
-                  Preço
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">
-                  Custo
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">
-                  Estoque
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">
-                  Mín.
-                </th>
+                <th className="px-6 py-3 text-left">Produto</th>
+                <th className="px-6 py-3 text-left">Categoria</th>
+                <th className="px-6 py-3 text-left">Preço</th>
+                <th className="px-6 py-3 text-left">Custo</th>
+                <th className="px-6 py-3 text-left">Estoque</th>
+                <th className="px-6 py-3 text-left">Validade</th>
               </tr>
             </thead>
-            <tbody>
-              {produtos.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan="6"
-                    className="px-6 py-8 text-center text-gray-500"
-                  >
-                    Nenhum produto cadastrado
-                  </td>
-                </tr>
-              ) : (
-                produtos.map((produto) => {
-                  const estoqueTotal = produto.estoque.reduce(
-                    (sum, e) => sum + e.quantidade,
-                    0,
-                  );
-                  const estoqueAbaixoMinimo = estoqueTotal < produto.estoqueMin;
 
-                  return (
-                    <tr key={produto.id} onClick={() => setSelectedProduto(produto)} className="border-t hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="font-semibold">{produto.nome}</div>
-                        <div className="text-sm text-gray-600">
-                          {produto.descricao}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">{produto.categoria}</td>
-                      <td className="px-6 py-4 font-semibold">
-                        R$ {produto.preco.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">
-                        R$ {produto.custoUnit.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`font-semibold ${estoqueAbaixoMinimo ? "text-red-600" : "text-green-600"}`}
-                        >
-                          {estoqueTotal} {produto.unidade}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">
-                        {produto.estoqueMin}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+            <tbody>
+              {produtos.map((produto) => {
+                const estoqueTotal = produto.estoque.reduce(
+                  (sum, e) => sum + e.quantidade,
+                  0,
+                );
+
+                const validade = pegarValidadeMaisProxima(produto.estoque);
+
+                return (
+                  <tr
+                    key={produto.id}
+                    onClick={() => setSelectedProduto(produto)}
+                    className="border-t hover:bg-gray-50 cursor-pointer"
+                  >
+                    <td className="px-6 py-4 font-semibold">{produto.nome}</td>
+
+                    <td className="px-6 py-4">{produto.categoria}</td>
+
+                    <td className="px-6 py-4">R$ {produto.preco.toFixed(2)}</td>
+
+                    <td className="px-6 py-4">
+                      R$ {produto.custoUnit.toFixed(2)}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {estoqueTotal} {produto.unidade}
+                    </td>
+
+                    <td className="px-6 py-4">{formatarData(validade)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+
+        {/* MOBILE */}
+        <div className="md:hidden flex flex-col gap-3">
+          {produtos.map((produto) => {
+            const estoqueTotal = produto.estoque.reduce(
+              (sum, e) => sum + e.quantidade,
+              0,
+            );
+
+            const validade = pegarValidadeMaisProxima(produto.estoque);
+
+            return (
+              <div
+                key={produto.id}
+                onClick={() => setSelectedProduto(produto)}
+                className="bg-white p-4 rounded-xl shadow"
+              >
+                <div className="font-semibold text-lg">{produto.nome}</div>
+
+                <div className="text-sm text-gray-600">{produto.categoria}</div>
+
+                <div className="flex justify-between mt-2 text-sm">
+                  <span>Preço</span>
+                  <span className="font-semibold">
+                    R$ {produto.preco.toFixed(2)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span>Estoque</span>
+                  <span>
+                    {estoqueTotal} {produto.unidade}
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span>Validade</span>
+                  <span>{formatarData(validade)}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {selectedProduto && (
           <ProductEditModal
             produto={selectedProduto}
             onClose={() => setSelectedProduto(null)}
-            onUpdate={() => fetchProdutos()}
+            onUpdate={fetchProdutos}
           />
         )}
       </div>
