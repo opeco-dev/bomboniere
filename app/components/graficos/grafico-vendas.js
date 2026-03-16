@@ -4,6 +4,9 @@ import { useEffect, useState } from "react";
 
 import { BarChart, Bar, PieChart, Pie, Tooltip, XAxis, YAxis } from "recharts";
 
+import GraficoModal from "./grafico-modal";
+import BotaoVerMais from "./botao-ver-mais";
+
 export default function GraficoVendas() {
   const [dados, setDados] = useState([]);
   const [tipo, setTipo] = useState("barra");
@@ -29,10 +32,16 @@ export default function GraficoVendas() {
     carregar();
   }, []);
 
+  const dadosLimitados = dados.slice(-7);
+
   return (
     <div className="bg-white p-4 rounded-xl shadow">
       <div className="flex justify-between mb-3">
-        <h2 className="font-semibold">Vendas</h2>
+        <div className="flex justify-between mb-3">
+          <h2 className="font-semibold">Vendas</h2>
+
+          <BotaoVerMais onClick={() => setModalAberta(true)} />
+        </div>
 
         <select
           value={tipo}
@@ -46,7 +55,7 @@ export default function GraficoVendas() {
       </div>
 
       {tipo === "barra" && (
-        <BarChart width={400} height={250} data={dados}>
+        <BarChart width={400} height={250} data={dadosLimitados}>
           <XAxis dataKey="periodo" />
 
           <YAxis />
@@ -59,7 +68,7 @@ export default function GraficoVendas() {
 
       {tipo === "pizza" && (
         <PieChart width={400} height={250}>
-          <Pie data={dados} dataKey="total" nameKey="periodo" />
+          <Pie data={dadosLimitados} dataKey="total" nameKey="periodo" />
 
           <Tooltip />
         </PieChart>

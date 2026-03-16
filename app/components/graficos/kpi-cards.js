@@ -14,7 +14,7 @@ export default function KpiCards() {
 
   if (!dados) {
     return (
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
@@ -45,12 +45,14 @@ export default function KpiCards() {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {cards.map((c, i) => (
-        <div key={i} className="bg-white rounded-xl shadow p-4">
+        <div key={i} className="bg-white rounded-xl shadow p-3 md:p-4">
           <p className="text-xs text-gray-500">{c.label}</p>
 
-          <p className="text-[#8E000C] font-bold text-lg mt-1">{c.value}</p>
+          <p className="text-[#8E000C] font-bold text-lg md:text-xl mt-1">
+            {c.value}
+          </p>
         </div>
       ))}
     </div>
