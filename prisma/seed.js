@@ -8,7 +8,7 @@ async function main() {
 
   console.log('🌱 Iniciando seed...')
 
-  const senhaHash = await bcrypt.hash('admin123', 10)
+  const senhaHash = await bcrypt.hash('Admin123@', 10)
 
   // =============================
   // ADMIN
