@@ -4,89 +4,110 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../api/auth/[...nextauth]/route";
 
 export async function POST(req) {
-
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    return NextResponse.json(
-      { error: "Não autenticado" },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   }
 
   const body = await req.json();
-  const itens = body.itens;
+  const itens = body.itens || [];
+  const status = body.status || "aberta";
 
-  if (!itens || itens.length === 0) {
-    return NextResponse.json(
-      { error: "Carrinho vazio" },
-      { status: 400 }
-    );
+  if (!itens.length) {
+    return NextResponse.json({ error: "Carrinho vazio" }, { status: 400 });
   }
 
-  // buscar cliente do usuário logado
   const cliente = await prisma.cliente.findUnique({
     where: {
-      usuarioId: session.user.id
-    }
+      usuarioId: session.user.id,
+    },
   });
 
   if (!cliente) {
     return NextResponse.json(
       { error: "Cliente não encontrado" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 
-  // calcular total
   const total = itens.reduce(
-    (sum, i) => sum + i.preco * i.quantidade,
-    0
+    (sum, item) => sum + Number(item.preco || 0) * Number(item.quantidade || 0),
+    0,
   );
 
-  // criar venda
-  const venda = await prisma.venda.create({
-    data: {
-      clienteId: cliente.id,
-      total: total,
-      status: "aberta",
-
-      itens: {
-        create: itens.map((i) => ({
-          produtoId: i.id,
-          quantidade: i.quantidade,
-          precoUnit: i.preco,
-          subtotal: i.preco * i.quantidade,
-        })),
-      },
-    },
-
-    include: {
-      cliente: true,
-      itens: {
-        include: { produto: true },
-      },
-    },
-  });
-
-  // baixar estoque
-  for (const item of itens) {
-    await prisma.estoque.updateMany({
-      where: { produtoId: item.id },
-      data: {
-        quantidade: {
-          decrement: item.quantidade,
+  try {
+    const venda = await prisma.$transaction(async (tx) => {
+      const novaVenda = await tx.venda.create({
+        data: {
+          clienteId: cliente.id,
+          total,
+          status,
+          itens: {
+            create: itens.map((item) => ({
+              produtoId: item.id,
+              variacaoId: item.variacaoId || null,
+              saborSnapshot: item.sabor || null,
+              quantidade: Number(item.quantidade || 0),
+              precoUnit: Number(item.preco || 0),
+              subtotal: Number(item.preco || 0) * Number(item.quantidade || 0),
+            })),
+          },
         },
-      },
+        include: {
+          cliente: true,
+          itens: {
+            include: {
+              produto: true,
+              variacao: true,
+            },
+          },
+        },
+      });
+
+      for (const item of itens) {
+        if (item.variacaoId) {
+          await tx.estoque.updateMany({
+            where: {
+              produtoId: item.id,
+              variacaoId: item.variacaoId,
+            },
+            data: {
+              quantidade: {
+                decrement: Number(item.quantidade || 0),
+              },
+            },
+          });
+        } else {
+          await tx.estoque.updateMany({
+            where: {
+              produtoId: item.id,
+              variacaoId: null,
+            },
+            data: {
+              quantidade: {
+                decrement: Number(item.quantidade || 0),
+              },
+            },
+          });
+        }
+      }
+
+      return novaVenda;
     });
+
+    return NextResponse.json(venda);
+  } catch (error) {
+    console.error("Erro ao criar pedido:", error);
+
+    return NextResponse.json(
+      { error: "Erro ao criar pedido" },
+      { status: 500 },
+    );
   }
-
-  return NextResponse.json(venda);
-
 }
 
 export async function GET() {
-
   const session = await getServerSession(authOptions);
 
   if (!session) {
@@ -95,8 +116,8 @@ export async function GET() {
 
   const cliente = await prisma.cliente.findUnique({
     where: {
-      usuarioId: session.user.id
-    }
+      usuarioId: session.user.id,
+    },
   });
 
   if (!cliente) {
@@ -106,22 +127,20 @@ export async function GET() {
   const vendas = await prisma.venda.findMany({
     where: {
       clienteId: cliente.id,
-      ativo: true
+      ativo: true,
     },
-
     include: {
       itens: {
         include: {
-          produto: true
-        }
-      }
+          produto: true,
+          variacao: true,
+        },
+      },
     },
-
     orderBy: {
-      createdAt: "desc"
-    }
+      createdAt: "desc",
+    },
   });
 
   return NextResponse.json(vendas);
-
 }

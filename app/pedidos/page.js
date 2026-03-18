@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import BottomNav from "../components/ui/BottomNav";
 import StatusPedido from "../components/ui/StatusPedido";
-import { formatDateTime } from "@/app/lib/utils"
+import { formatDateTime } from "@/app/lib/utils";
 
 export default function PedidosPage() {
   const [saldo, setSaldo] = useState(0);
@@ -38,26 +38,34 @@ export default function PedidosPage() {
           <div key={pedido.id} className="bg-white p-4 rounded-xl shadow">
             <div className="flex justify-between mb-2">
               <div>
-              <span className="text-sm font-semibold mr-2">
-                Pedido: {pedido.id.slice(0, 6)}
-              </span>
+                <span className="text-sm font-semibold mr-2">
+                  Pedido: {pedido.id.slice(0, 6)}
+                </span>
                 <StatusPedido status={pedido.status} />
               </div>
-             
+
               <span className="text-sm text-gray-500 bg-slate-100 py-1 px-2 rounded-full">
                 {formatDateTime(pedido.createdAt)}
-              </span>              
+              </span>
             </div>
 
-            {pedido.itens.map((item) => (
-              <div key={item.id} className="flex justify-between text-xs">
-                <span>
-                  {item.produto.nome} x {item.quantidade}
-                </span>
+            {pedido.itens.map((item) => {
+              const sabor = item.saborSnapshot || item.variacao?.sabor;
 
-                <span>R$ {item.subtotal.toFixed(2)}</span>
-              </div>
-            ))}
+              return (
+                <div key={item.id} className="text-sm">
+                  <div className="font-medium">
+                    {item.produto.nome} x {item.quantidade}
+                  </div>
+
+                  {sabor && (
+                    <div className="text-gray-500">
+                      Sabor: <span className="font-medium">{sabor}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             <p className="text-right text-[#8E000C] text-md font-bold mt-2">
               R$ {pedido.total.toFixed(2)}

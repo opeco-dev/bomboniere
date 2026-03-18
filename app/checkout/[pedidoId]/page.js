@@ -14,7 +14,6 @@ export default function CheckoutPage() {
   const [pixQr, setPixQr] = useState(null);
   const [tempoRestante, setTempoRestante] = useState(null);
 
-  // carregar pedido
   useEffect(() => {
     async function carregarPedido() {
       const res = await fetch(`/api/pedidos/${pedidoId}`);
@@ -25,21 +24,18 @@ export default function CheckoutPage() {
       }
 
       const data = await res.json();
-
       setPedido(data);
     }
 
     carregarPedido();
   }, [pedidoId]);
 
-  // contador do pix
   useEffect(() => {
     if (!pixQr?.expiraEm) return;
 
     const intervalo = setInterval(() => {
       const agora = new Date();
       const expira = new Date(pixQr.expiraEm);
-
       const diff = expira - agora;
 
       if (diff <= 0) {
@@ -71,7 +67,6 @@ export default function CheckoutPage() {
     });
 
     const data = await res.json();
-
     setPixQr(data);
   }
 
@@ -90,7 +85,7 @@ export default function CheckoutPage() {
     };
 
     return () => eventSource.close();
-  }, [pixQr]);
+  }, [pixQr, pedidoId, router]);
 
   if (!pedido) return <p className="p-6">Carregando...</p>;
 
@@ -105,15 +100,30 @@ export default function CheckoutPage() {
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow mb-4">
-        {pedido.itens.map((item) => (
-          <div key={item.id} className="flex justify-between text-sm mb-1">
-            <span>
-              {item.produto.nome} x {item.quantidade}
-            </span>
+        {pedido.itens.map((item) => {
+          const sabor = item.saborSnapshot || item.variacao?.sabor || null;
 
-            <span>R$ {item.subtotal.toFixed(2)}</span>
-          </div>
-        ))}
+          return (
+            <div
+              key={item.id}
+              className="flex justify-between gap-4 text-sm mb-3"
+            >
+              <div>
+                <div>
+                  {item.produto.nome} x {item.quantidade}
+                </div>
+
+                {sabor && (
+                  <div className="text-gray-500">
+                    Sabor: <span className="font-medium">{sabor}</span>
+                  </div>
+                )}
+              </div>
+
+              <span>R$ {item.subtotal.toFixed(2)}</span>
+            </div>
+          );
+        })}
 
         <p className="text-right text-[#8E000C] font-semibold mt-2">
           R$ {pedido.total.toFixed(2)}
@@ -138,6 +148,7 @@ export default function CheckoutPage() {
           <img
             src={`data:image/png;base64,${pixQr.qrBase64}`}
             className="w-72 h-72"
+            alt="QR Code PIX"
           />
 
           {tempoRestante && (

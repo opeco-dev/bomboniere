@@ -1,67 +1,64 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import { useCart } from '../contexts/CartContext';
-import placeholder from "../../../public/placeholder.png"
+import Image from "next/image";
+import { useCart } from "../contexts/CartContext";
 
 export default function CartItemCard({ item }) {
-
-  const { increase, decrease } = useCart()
+  const { increase, decrease, removeFromCart } = useCart();
 
   return (
-
-    <div className="flex items-center gap-4 bg-white rounded-xl p-4 shadow">
-
-      <div className="relative w-20 h-20 bg-[#FFDDE0] rounded-lg">
-
-        <Image
-          src={item.imagens?.[0]?.url || placeholder}
-          alt={item.nome}
-          fill
-          className="object-contain p-2"
-        />
-
+    <div className="bg-white rounded-xl p-3 shadow flex gap-3">
+      <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
+        {item.imagem ? (
+          <Image
+            src={item.imagem}
+            alt={item.nomeCarrinho || item.nome}
+            fill
+            className="object-contain"
+          />
+        ) : null}
       </div>
 
       <div className="flex-1">
+        <h3 className="font-semibold">{item.nome}</h3>
 
-        <h3 className="font-semibold">
-          {item.nome}
-        </h3>
+        {item.sabor && (
+          <p className="text-sm text-gray-500">
+            Sabor: <span className="font-medium">{item.sabor}</span>
+          </p>
+        )}
 
-        <p className="text-gray-400 text-sm">
-          {item.categoria}
+        <p className="text-sm text-[#8E000C] font-semibold">
+          R$ {Number(item.preco).toFixed(2)}
         </p>
 
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => decrease(item.id, item.variacaoId)}
+              className="w-8 h-8 rounded-full border"
+            >
+              -
+            </button>
+
+            <span>{item.quantidade}</span>
+
+            <button
+              onClick={() => increase(item.id, item.variacaoId)}
+              className="w-8 h-8 rounded-full border"
+            >
+              +
+            </button>
+          </div>
 
           <button
-            onClick={() => decrease(item.id)}
-            className="w-7 h-7 bg-gray-200 rounded"
+            onClick={() => removeFromCart(item.id, item.variacaoId)}
+            className="text-sm text-red-600"
           >
-            -
+            Remover
           </button>
-
-          <span>{item.quantidade}</span>
-
-          <button
-            onClick={() => increase(item.id)}
-            className="w-7 h-7 bg-gray-200 rounded"
-          >
-            +
-          </button>
-
         </div>
-
       </div>
-
-      <div className="text-[#8E000C] font-bold">
-
-        R$ {(item.preco * item.quantidade).toFixed(2)}
-
-      </div>
-
     </div>
-
-  )
+  );
 }

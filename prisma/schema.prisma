@@ -12,7 +12,7 @@ model Usuario {
   nome      String
   email     String   @unique
   senha     String
-  role      String   @default("user") // admin, funcionario, cliente
+  role      String   @default("user")
   ativo     Boolean  @default(true)
 
   createdAt DateTime @default(now())
@@ -52,7 +52,7 @@ model Produto {
   preco       Float
   custoUnit   Float
 
-  unidade     String   @default("un") // un, kg, caixa
+  unidade     String   @default("un")
   estoqueMin  Int
   ativo       Boolean  @default(true)
 
@@ -60,6 +60,7 @@ model Produto {
   updatedAt   DateTime @updatedAt
   
   imagens     ProdutoImagem[]
+  variacoes   ProdutoVariacao[]
 
   estoque     Estoque[]
   itensVenda  ItemVenda[]
@@ -68,13 +69,41 @@ model Produto {
 model ProdutoImagem {
   id        Int     @id @default(autoincrement())
   url       String
+  fileKey   String?
   produtoId Int
   produto   Produto @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+}
+
+model ProdutoVariacao {
+  id         Int      @id @default(autoincrement())
+  produtoId  Int
+  sabor      String
+  preco      Float?
+  ativo      Boolean  @default(true)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  produto    Produto  @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  imagens    ProdutoVariacaoImagem[]
+  estoque    Estoque[]
+  itensVenda ItemVenda[]
+
+  @@index([produtoId])
+}
+
+model ProdutoVariacaoImagem {
+  id         Int             @id @default(autoincrement())
+  url        String
+  fileKey    String?
+  variacaoId Int
+  variacao   ProdutoVariacao @relation(fields: [variacaoId], references: [id], onDelete: Cascade)
 }
 
 model Estoque {
   id            String   @id @default(cuid())
   produtoId     Int
+  variacaoId    Int?
 
   quantidade    Int
   lote          String?
@@ -84,7 +113,11 @@ model Estoque {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  produto       Produto  @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  produto       Produto          @relation(fields: [produtoId], references: [id], onDelete: Cascade)
+  variacao      ProdutoVariacao? @relation(fields: [variacaoId], references: [id], onDelete: Cascade)
+
+  @@index([produtoId])
+  @@index([variacaoId])
 }
 
 model Venda {
@@ -94,8 +127,8 @@ model Venda {
   total       Float
   desconto    Float    @default(0)
   
-  ativo      Boolean  @default(true)
-  status      String   @default("aberta") // aberta, finalizada, cancelada
+  ativo       Boolean  @default(true)
+  status      String   @default("aberta")
   observacoes String?
   
   pagamentoId String? @unique
@@ -112,16 +145,19 @@ model Venda {
 }
 
 model ItemVenda {
-  id          String   @id @default(cuid())
-  vendaId     String
-  produtoId   Int
+  id             String   @id @default(cuid())
+  vendaId        String
+  produtoId      Int
+  variacaoId     Int?
+  saborSnapshot  String?
 
-  quantidade  Int
-  precoUnit   Float
-  subtotal    Float
+  quantidade     Int
+  precoUnit      Float
+  subtotal       Float
 
-  venda       Venda    @relation(fields: [vendaId], references: [id], onDelete: Cascade)
-  produto     Produto  @relation(fields: [produtoId], references: [id])
+  venda          Venda            @relation(fields: [vendaId], references: [id], onDelete: Cascade)
+  produto        Produto          @relation(fields: [produtoId], references: [id])
+  variacao       ProdutoVariacao? @relation(fields: [variacaoId], references: [id])
 }
 
 model ContaReceber {
@@ -133,7 +169,7 @@ model ContaReceber {
   valorPago       Float    @default(0)
   saldo           Float
 
-  status          String   @default("pendente") // pendente, parcial, pago, cancelado
+  status          String   @default("pendente")
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -152,7 +188,7 @@ model Parcela {
   valor           Float
 
   dataVencimento  DateTime
-  status          String   @default("pendente") // pendente, pago, atrasado
+  status          String   @default("pendente")
 
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -167,7 +203,7 @@ model Pagamento {
   parcelaId         String
 
   valor             Float
-  metodoPagamento   String // dinheiro, pix, debito, credito
+  metodoPagamento   String
 
   dataPagamento     DateTime @default(now())
   observacoes       String?

@@ -22,7 +22,6 @@ export default function CarrinhoPage() {
 
     if (res.ok) {
       clearCart();
-
       router.push(`/checkout/${data.id}`);
     }
   };
@@ -42,7 +41,6 @@ export default function CarrinhoPage() {
     if (!res.ok) return;
 
     clearCart();
-
     router.push("/pedidos");
   }
 
@@ -52,14 +50,16 @@ export default function CarrinhoPage() {
 
       <div className="space-y-3">
         {cart.map((item) => (
-          <CartItemCard key={item.id} item={item} />
+          <CartItemCard
+            key={`${item.id}-${item.variacaoId ?? "base"}`}
+            item={item}
+          />
         ))}
       </div>
 
       <div className="fixed bottom-12 left-0 right-0 bg-white p-4 shadow">
         <div className="flex justify-between text-lg font-bold mb-3">
           <span>Total:</span>
-
           <span className="text-[#8E000C]">R$ {total.toFixed(2)}</span>
         </div>
 

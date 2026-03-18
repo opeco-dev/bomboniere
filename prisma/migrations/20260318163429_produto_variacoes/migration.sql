@@ -45,21 +45,45 @@ CREATE TABLE "Produto" (
 CREATE TABLE "ProdutoImagem" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "url" TEXT NOT NULL,
+    "fileKey" TEXT,
     "produtoId" INTEGER NOT NULL,
     CONSTRAINT "ProdutoImagem_produtoId_fkey" FOREIGN KEY ("produtoId") REFERENCES "Produto" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "ProdutoVariacao" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "produtoId" INTEGER NOT NULL,
+    "sabor" TEXT NOT NULL,
+    "preco" REAL,
+    "ativo" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "ProdutoVariacao_produtoId_fkey" FOREIGN KEY ("produtoId") REFERENCES "Produto" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "ProdutoVariacaoImagem" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "url" TEXT NOT NULL,
+    "fileKey" TEXT,
+    "variacaoId" INTEGER NOT NULL,
+    CONSTRAINT "ProdutoVariacaoImagem_variacaoId_fkey" FOREIGN KEY ("variacaoId") REFERENCES "ProdutoVariacao" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Estoque" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "produtoId" INTEGER NOT NULL,
+    "variacaoId" INTEGER,
     "quantidade" INTEGER NOT NULL,
     "lote" TEXT,
     "dataValidade" DATETIME,
     "localizacao" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "Estoque_produtoId_fkey" FOREIGN KEY ("produtoId") REFERENCES "Produto" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "Estoque_produtoId_fkey" FOREIGN KEY ("produtoId") REFERENCES "Produto" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "Estoque_variacaoId_fkey" FOREIGN KEY ("variacaoId") REFERENCES "ProdutoVariacao" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -84,11 +108,14 @@ CREATE TABLE "ItemVenda" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "vendaId" TEXT NOT NULL,
     "produtoId" INTEGER NOT NULL,
+    "variacaoId" INTEGER,
+    "saborSnapshot" TEXT,
     "quantidade" INTEGER NOT NULL,
     "precoUnit" REAL NOT NULL,
     "subtotal" REAL NOT NULL,
     CONSTRAINT "ItemVenda_vendaId_fkey" FOREIGN KEY ("vendaId") REFERENCES "Venda" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "ItemVenda_produtoId_fkey" FOREIGN KEY ("produtoId") REFERENCES "Produto" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT "ItemVenda_produtoId_fkey" FOREIGN KEY ("produtoId") REFERENCES "Produto" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT "ItemVenda_variacaoId_fkey" FOREIGN KEY ("variacaoId") REFERENCES "ProdutoVariacao" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -136,6 +163,15 @@ CREATE UNIQUE INDEX "Usuario_email_key" ON "Usuario"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Cliente_usuarioId_key" ON "Cliente"("usuarioId");
+
+-- CreateIndex
+CREATE INDEX "ProdutoVariacao_produtoId_idx" ON "ProdutoVariacao"("produtoId");
+
+-- CreateIndex
+CREATE INDEX "Estoque_produtoId_idx" ON "Estoque"("produtoId");
+
+-- CreateIndex
+CREATE INDEX "Estoque_variacaoId_idx" ON "Estoque"("variacaoId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Venda_pagamentoId_key" ON "Venda"("pagamentoId");

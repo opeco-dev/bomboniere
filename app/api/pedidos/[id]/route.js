@@ -12,6 +12,7 @@ export async function GET(req, { params }) {
         itens: {
           include: {
             produto: true,
+            variacao: true,
           },
         },
       },
