@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import AdminSidebar from "../components/ui/AdminSideBar";
 import ProductImageUpload from "../components/ui/products/ProductImageUpload";
 import ProductEditModal from "../components/ui/products/ProductEditModal";
+import ProdutoKpiCards from "../components/ui/products/ProdutoKpiCards";
 
 const getInitialFormData = () => ({
   nome: "",
@@ -133,6 +134,46 @@ export default function ProdutosPage() {
     );
 
     return pegarValidadeMaisProxima([...estoquePrincipal, ...estoqueVariacoes]);
+  };
+
+  const getEstoqueVariacaoTotal = (variacao) => {
+    const estoque = Array.isArray(variacao?.estoque) ? variacao.estoque : [];
+
+    return estoque.reduce(
+      (sum, item) => sum + Number(item?.quantidade || 0),
+      0,
+    );
+  };
+
+  const isEstoqueCritico = (produto) => {
+    const estoqueMin = Number(produto?.estoqueMin || 0);
+    const variacoes = Array.isArray(produto?.variacoes)
+      ? produto.variacoes
+      : [];
+
+    if (variacoes.length > 0) {
+      return variacoes.some(
+        (variacao) => getEstoqueVariacaoTotal(variacao) <= estoqueMin,
+      );
+    }
+
+    return getEstoqueTotalProduto(produto) <= estoqueMin;
+  };
+
+  const isValidadeCritica = (data) => {
+    if (!data) return false;
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const limite = new Date();
+    limite.setHours(0, 0, 0, 0);
+    limite.setDate(limite.getDate() + 7);
+
+    const validade = new Date(data);
+    validade.setHours(0, 0, 0, 0);
+
+    return validade <= limite;
   };
 
   const getQtdVariacoes = (produto) => {
@@ -283,6 +324,10 @@ export default function ProdutosPage() {
           </button>
         </div>
 
+        <div className="mb-6">
+          <ProdutoKpiCards />
+        </div>
+
         <div className="hidden md:block bg-white rounded-xl shadow overflow-x-auto">
           <table className="w-full text-sm min-w-[900px]">
             <thead className="bg-gray-100">
@@ -303,27 +348,66 @@ export default function ProdutosPage() {
                 const validade = getValidadeProduto(produto);
                 const qtdVariacoes = getQtdVariacoes(produto);
 
+                const estoqueCritico = isEstoqueCritico(produto);
+                const validadeCritica = isValidadeCritica(validade);
+
                 return (
                   <tr
                     key={produto.id}
                     onClick={() => setSelectedProduto(produto)}
-                    className="border-t hover:bg-gray-50 cursor-pointer"
+                    className={`border-t hover:bg-gray-50 cursor-pointer ${
+                      estoqueCritico || validadeCritica ? "bg-red-50/40" : ""
+                    }`}
                   >
                     <td className="px-6 py-4 font-semibold">{produto.nome}</td>
+
                     <td className="px-6 py-4">{produto.categoria}</td>
+
                     <td className="px-6 py-4">
                       {formatarMoeda(produto.preco)}
                     </td>
+
                     <td className="px-6 py-4">
                       {formatarMoeda(produto.custoUnit)}
                     </td>
+
                     <td className="px-6 py-4">
                       {qtdVariacoes > 0 ? `${qtdVariacoes} sabor(es)` : "-"}
                     </td>
-                    <td className="px-6 py-4">
-                      {estoqueTotal} {produto.unidade}
+
+                    <td
+                      className={`px-6 py-4 ${
+                        estoqueCritico ? "text-[#8E000C] font-semibold" : ""
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span>
+                          {estoqueTotal} {produto.unidade}
+                        </span>
+
+                        {estoqueCritico && (
+                          <span className="text-[11px] text-[#8E000C]">
+                            Estoque crítico
+                          </span>
+                        )}
+                      </div>
                     </td>
-                    <td className="px-6 py-4">{formatarData(validade)}</td>
+
+                    <td
+                      className={`px-6 py-4 ${
+                        validadeCritica ? "text-[#8E000C] font-semibold" : ""
+                      }`}
+                    >
+                      <div className="flex flex-col">
+                        <span>{formatarData(validade)}</span>
+
+                        {validadeCritica && validade && (
+                          <span className="text-[11px] text-[#8E000C]">
+                            Validade crítica
+                          </span>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 );
               })}
@@ -337,11 +421,18 @@ export default function ProdutosPage() {
             const validade = getValidadeProduto(produto);
             const qtdVariacoes = getQtdVariacoes(produto);
 
+            const estoqueCritico = isEstoqueCritico(produto);
+            const validadeCritica = isValidadeCritica(validade);
+
             return (
               <div
                 key={produto.id}
                 onClick={() => setSelectedProduto(produto)}
-                className="bg-white p-4 rounded-xl shadow"
+                className={`bg-white p-4 rounded-xl shadow border ${
+                  estoqueCritico || validadeCritica
+                    ? "border-red-200"
+                    : "border-transparent"
+                }`}
               >
                 <div className="font-semibold text-lg">{produto.nome}</div>
                 <div className="text-sm text-gray-600">{produto.categoria}</div>
@@ -360,16 +451,52 @@ export default function ProdutosPage() {
                 </div>
 
                 <div className="flex justify-between text-sm">
-                  <span>Estoque</span>
-                  <span>
+                  <span
+                    className={
+                      estoqueCritico ? "text-[#8E000C] font-semibold" : ""
+                    }
+                  >
+                    Estoque
+                  </span>
+
+                  <span
+                    className={
+                      estoqueCritico ? "text-[#8E000C] font-semibold" : ""
+                    }
+                  >
                     {estoqueTotal} {produto.unidade}
                   </span>
                 </div>
 
-                <div className="flex justify-between text-sm">
-                  <span>Validade</span>
-                  <span>{formatarData(validade)}</span>
+                {estoqueCritico && (
+                  <div className="text-[11px] text-[#8E000C] mt-1">
+                    Estoque crítico
+                  </div>
+                )}
+
+                <div className="flex justify-between text-sm mt-1">
+                  <span
+                    className={
+                      validadeCritica ? "text-[#8E000C] font-semibold" : ""
+                    }
+                  >
+                    Validade
+                  </span>
+
+                  <span
+                    className={
+                      validadeCritica ? "text-[#8E000C] font-semibold" : ""
+                    }
+                  >
+                    {formatarData(validade)}
+                  </span>
                 </div>
+
+                {validadeCritica && validade && (
+                  <div className="text-[11px] text-[#8E000C] mt-1">
+                    Validade crítica
+                  </div>
+                )}
               </div>
             );
           })}
