@@ -9,15 +9,16 @@ export default function ClientModal({ open, onClose, cliente, setClientes }) {
     email: "",
     setor: "",
     senha: "",
+    role: "user"
   });
 
   useEffect(() => {
     if (cliente) {
       setForm({
         nome: cliente.nome || "",
-        telefone: cliente.telefone || "",
+        telefone: cliente?.telefone || "",
         email: cliente.email || "",
-        setor: cliente.setor || "",
+        setor: cliente?.setor || "",
         senha: "",
       });
     } else {
@@ -83,12 +84,14 @@ export default function ClientModal({ open, onClose, cliente, setClientes }) {
 
       <div className="relative bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-lg">
         <h2 className="text-xl font-bold mb-5">
-          {cliente ? "Editar cliente" : "Novo cliente"}
+          {cliente ? "Editar Usuário" : "Novo Usuário"}
         </h2>
 
         <div className="space-y-3">
           <div className="col-span-2">
-            <label className="block text-sm font-bold mb-2">Nome Completo</label>
+            <label className="block text-sm font-bold mb-2">
+              Nome Completo
+            </label>
             <input
               name="nome"
               placeholder="Nome"
@@ -120,15 +123,30 @@ export default function ClientModal({ open, onClose, cliente, setClientes }) {
             />
           </div>
 
-          <div className="col-span-2">
-            <label className="block text-sm font-bold mb-2">Setor</label>
-            <input
-              name="setor"
-              placeholder="Setor"
-              value={form.setor}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2"
-            />
+          <div className="flex gap-5">
+            <div className="col-span-2">
+              <label className="block text-sm font-bold mb-2">Setor</label>
+              <input
+                name="setor"
+                placeholder="Setor"
+                value={form.setor}
+                onChange={handleChange}
+                className="w-full border rounded-lg px-3 py-2"
+              />
+            </div>
+
+            <div className="col-span-2">
+              <label className="block text-sm font-bold mb-2">Tipo</label>
+              <select
+                name="role"
+                value={form.role}
+                onChange={handleChange}
+                className="w-full border rounded-lg px-3 py-2"
+              >
+                <option value="user">Usuário</option>
+                <option value="admin">Administrador</option>
+              </select>
+            </div>
           </div>
 
           {!cliente && (

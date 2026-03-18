@@ -98,14 +98,7 @@ export default function DashboardPage() {
         <div className="flex flex-col items-end gap-1">
           <span className="text-[11px] px-2 py-1.5 rounded-full bg-gray-100 text-gray-600">
             {roleLabel}
-          </span>
-          <button
-            type="button"
-            onClick={() => router.replace("/login")}
-            className="text-[12px] text-gray-400 hover:text-gray-600"
-          >
-            Sair
-          </button>
+          </span>          
         </div>
       </header>
 

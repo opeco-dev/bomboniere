@@ -5,12 +5,15 @@ import { authOptions } from "../auth/[...nextauth]/route";
 import bcrypt from "bcryptjs";
 
 export async function GET() {
-  const clientes = await prisma.cliente.findMany({
+  const usuarios = await prisma.usuario.findMany({
     where: { ativo: true },
     orderBy: { createdAt: "desc" },
+    include: {
+      cliente: true,
+    },
   });
 
-  return NextResponse.json(clientes);
+  return NextResponse.json(usuarios);
 }
 
 export async function POST(req) {
@@ -31,7 +34,7 @@ export async function POST(req) {
         nome: body.nome,
         email: body.email,
         senha: senhaHash,
-        role: "cliente",
+        role: body.role || "user",
       },
     });
 
