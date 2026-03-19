@@ -1,17 +1,18 @@
-import CredentialsProvider from 'next-auth/providers/credentials';
-import { prisma } from './prisma';
-import bcrypt from 'bcryptjs';
+import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "./prisma";
+import bcrypt from "bcryptjs";
 
 export const authOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
   },
   providers: [
     CredentialsProvider({
-      name: 'Credenciais',
+      name: "Credenciais",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Senha', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
@@ -26,7 +27,11 @@ export const authOptions = {
           return null;
         }
 
-        const passwordMatch = await bcrypt.compare(credentials.password, user.senha);
+        const passwordMatch = await bcrypt.compare(
+          credentials.password,
+          user.senha,
+        );
+
         if (!passwordMatch) {
           return null;
         }
@@ -49,15 +54,13 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.role = token.role || 'user';
-      }
+      if (!session.user) session.user = {};
+      session.user.id = token.id;
+      session.user.role = token.role || "user";
       return session;
     },
   },
   pages: {
-    signIn: '/login',
+    signIn: "/login",
   },
 };
-
