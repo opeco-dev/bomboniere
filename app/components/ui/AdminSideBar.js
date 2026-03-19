@@ -16,7 +16,7 @@ export default function AdminSidebar() {
     { href: "/vendas", label: "Vendas" },
     { href: "/clientes", label: "Usuários" },
     { href: "/analise", label: "Análise" },
-    { href: "/configuracoes", label: "Configurações" },
+    { href: "/perfil", label: "Configurações" },
   ]
 
   return (

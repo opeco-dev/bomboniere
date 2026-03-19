@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import BottomNav from "../components/ui/BottomNav";
+import AdminSidebar from "../components/ui/AdminSideBar";
 import { useSession, signOut } from "next-auth/react";
 import { CircleUser, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function PerfilPage() {
-  const { data: session, update } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
 
   const [modal, setModal] = useState(null);
@@ -22,7 +23,10 @@ export default function PerfilPage() {
   const [error, setError] = useState("");
 
   const role = session?.user?.role || "user";
-  const roleLabel = role === "admin" ? "Administrador" : "Cliente";
+  const isAdmin = role === "admin";
+  const isCliente = role === "cliente" || role === "user";
+
+  const roleLabel = isAdmin ? "Administrador" : "Cliente";
 
   const nome = session?.user?.name || "";
   const email = session?.user?.email || "";
@@ -34,7 +38,6 @@ export default function PerfilPage() {
 
   function validarSenha(senha) {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
-
     return regex.test(senha);
   }
 
@@ -90,8 +93,6 @@ export default function PerfilPage() {
       setValue("");
       setConfirmPassword("");
 
-      /* encerra sessão e manda para login */
-
       await signOut({
         redirect: true,
         callbackUrl: "/login",
@@ -102,9 +103,24 @@ export default function PerfilPage() {
     }
   };
 
+  if (status === "loading") {
+    return (
+      <div className="p-4 max-w-xl mx-auto">
+        <div className="h-10 w-32 bg-gray-100 rounded animate-pulse mb-8" />
+        <div className="flex flex-col items-center my-8">
+          <div className="w-20 h-20 rounded-full bg-gray-100 animate-pulse" />
+          <div className="h-4 w-40 bg-gray-100 rounded animate-pulse mt-4" />
+          <div className="h-3 w-52 bg-gray-100 rounded animate-pulse mt-2" />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 pb-28 max-w-xl mx-auto">
-      {/* USER INFO */}
+    <div className={`p-4 max-w-xl mx-auto ${isCliente ? "pb-28" : "pb-8"}`}>
+      <div className="flex items-center justify-between gap-3">
+        {isAdmin && <AdminSidebar />}
+      </div>
 
       <div className="flex flex-col items-center my-8">
         <CircleUser color="#8E000C" size={70} />
@@ -117,8 +133,6 @@ export default function PerfilPage() {
           {roleLabel}
         </span>
       </div>
-
-      {/* ACTIONS */}
 
       <div className="flex flex-col gap-3">
         <button
@@ -150,8 +164,6 @@ export default function PerfilPage() {
         </button>
       </div>
 
-      {/* MODAL EDITAR */}
-
       {modal && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center z-40 p-4"
@@ -166,8 +178,6 @@ export default function PerfilPage() {
               {modal === "email" && "Alterar Email"}
               {modal === "senha" && "Redefinir Senha"}
             </h2>
-
-            {/* INPUT */}
 
             <div className="relative mb-3">
               <input
@@ -197,8 +207,6 @@ export default function PerfilPage() {
               )}
             </div>
 
-            {/* CONFIRMAR SENHA */}
-
             {modal === "senha" && (
               <div className="relative mb-3">
                 <input
@@ -218,8 +226,6 @@ export default function PerfilPage() {
                 </button>
               </div>
             )}
-
-            {/* REGRAS SENHA */}
 
             {modal === "senha" && (
               <p className="text-xs text-gray-500 mb-3">
@@ -253,8 +259,6 @@ export default function PerfilPage() {
         </div>
       )}
 
-      {/* MODAL CONFIRMAÇÃO */}
-
       {confirmModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
           <div className="bg-white w-full max-w-sm rounded-xl p-6">
@@ -283,7 +287,7 @@ export default function PerfilPage() {
         </div>
       )}
 
-      <BottomNav />
+      {isCliente && <BottomNav />}
     </div>
   );
 }
