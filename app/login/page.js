@@ -25,6 +25,25 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
+    // #region agent log
+    fetch('http://127.0.0.1:7887/ingest/83098060-f6a0-4f83-b310-6ca8f094a830', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Debug-Session-Id': '3b194b',
+      },
+      body: JSON.stringify({
+        sessionId: '3b194b',
+        runId: 'pre-fix',
+        hypothesisId: 'H1',
+        location: 'app/login/page.js:28',
+        message: 'login_submit_attempt',
+        data: { emailLength: form.email.length },
+        timestamp: Date.now(),
+      }),
+    }).catch(() => {});
+    // #endregion agent log
+
     const res = await signIn('credentials', {
       redirect: false,
       email: form.email,
@@ -34,6 +53,24 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res?.ok) {
+      // #region agent log
+      fetch('http://127.0.0.1:7887/ingest/83098060-f6a0-4f83-b310-6ca8f094a830', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Debug-Session-Id': '3b194b',
+        },
+        body: JSON.stringify({
+          sessionId: '3b194b',
+          runId: 'pre-fix',
+          hypothesisId: 'H2',
+          location: 'app/login/page.js:46',
+          message: 'login_success',
+          data: {},
+          timestamp: Date.now(),
+        }),
+      }).catch(() => {});
+      // #endregion agent log
       router.replace('/dashboard');
     } else {
       router.replace('/login?error=CredentialsSignin');

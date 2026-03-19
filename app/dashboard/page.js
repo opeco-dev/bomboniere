@@ -64,6 +64,25 @@ export default function DashboardPage() {
   const role = session?.user?.role || "user";
   const view = role === "admin" ? VIEWS.ADMIN : VIEWS.CLIENTE;
 
+  // #region agent log
+  fetch('http://127.0.0.1:7887/ingest/83098060-f6a0-4f83-b310-6ca8f094a830', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Debug-Session-Id': '3b194b',
+    },
+    body: JSON.stringify({
+      sessionId: '3b194b',
+      runId: 'pre-fix',
+      hypothesisId: 'H3',
+      location: 'app/dashboard/page.js:64',
+      message: 'dashboard_view_resolved',
+      data: { role, view },
+      timestamp: Date.now(),
+    }),
+  }).catch(() => {});
+  // #endregion agent log
+
   const roleLabel = role === "admin" ? "Administrador" : "Cliente";
 
   return (

@@ -1,32 +1,34 @@
-import CredentialsProvider from "next-auth/providers/credentials";
-import { prisma } from "./prisma";
-import bcrypt from "bcryptjs";
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { prisma } from './prisma';
+import bcrypt from 'bcryptjs';
 
 export const authOptions = {
+  session: {
+    strategy: 'jwt',
+  },
   providers: [
     CredentialsProvider({
-      name: "Credentials",
-
+      name: 'Credenciais',
       credentials: {
-        email: { label: "Email", type: "text" },
-        senha: { label: "Senha", type: "password" },
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Senha', type: 'password' },
       },
-
       async authorize(credentials) {
-        const user = await prisma.usuario.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
-
-        if (!user) {
-          throw new Error("Usuário não encontrado");
+        if (!credentials?.email || !credentials?.password) {
+          return null;
         }
 
-        const senhaValida = await bcrypt.compare(credentials.senha, user.senha);
+        const user = await prisma.usuario.findUnique({
+          where: { email: credentials.email },
+        });
 
-        if (!senhaValida) {
-          throw new Error("Senha inválida");
+        if (!user || !user.ativo) {
+          return null;
+        }
+
+        const passwordMatch = await bcrypt.compare(credentials.password, user.senha);
+        if (!passwordMatch) {
+          return null;
         }
 
         return {
@@ -38,34 +40,24 @@ export const authOptions = {
       },
     }),
   ],
-
-  session: {
-    strategy: "jwt",
-  },
-
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
       }
-
       return token;
     },
-
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id;
-        session.user.role = token.role;
+        session.user.role = token.role || 'user';
       }
-
       return session;
     },
   },
-
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
-
-  secret: process.env.NEXTAUTH_SECRET,
 };
+
